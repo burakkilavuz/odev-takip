@@ -1,0 +1,2475 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ödev Takip - 2-D Sınıfı Ödev, Kitap ve Yıldız Sistemi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Çocuk dostu ve yüksek okunaklı fontlar -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fefce8;
+            -webkit-tap-highlight-color: transparent;
+        }
+        h1, h2, h3, .font-playful {
+            font-family: 'Quicksand', 'Nunito', sans-serif;
+        }
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        .float-slow {
+            animation: floatSlow 3.5s ease-in-out infinite;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.92); opacity: 0; }
+            70% { transform: scale(1.02); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in {
+            animation: popIn 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        @media print {
+            body * { visibility: hidden; }
+            #printable-report-area, #printable-report-area * { visibility: visible; }
+            #printable-report-area {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-0 sm:p-4 bg-gradient-to-br from-amber-100 via-sky-100 to-emerald-100">
+
+    <!-- Ana Uygulama Konteyneri -->
+    <div id="app-container" class="w-full max-w-lg bg-[#fffdf9] sm:rounded-[2.5rem] sm:border-[8px] sm:border-slate-800 shadow-2xl overflow-hidden flex flex-col min-h-[100dvh] sm:min-h-[820px] sm:max-h-[890px] relative">
+        
+        <!-- Bildirim Toast Mesajı -->
+        <div id="toast-box" class="hidden fixed sm:absolute top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-sm bg-slate-800 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 pop-in">
+            <span id="toast-icon" class="text-2xl">✅</span>
+            <p id="toast-message" class="text-sm font-bold leading-snug"></p>
+        </div>
+
+        <!-- Yükleniyor Ekranı -->
+        <div id="screen-loading" class="flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-b from-sky-400 to-indigo-500 text-white text-center">
+            <div class="w-20 h-20 bg-amber-300 rounded-3xl flex items-center justify-center shadow-lg mb-4 animate-bounce border-4 border-white">
+                <span class="text-5xl">🌟</span>
+            </div>
+            <h2 class="text-2xl font-black">Ödev Takip</h2>
+            <p class="text-sky-100 font-bold text-sm mt-1">2-D Sınıfı veritabanına bağlanıyor...</p>
+        </div>
+
+        <!-- ==================== 1. GİRİŞ EKRANI ==================== -->
+        <div id="screen-login" class="hidden flex-1 flex flex-col justify-between p-6 bg-gradient-to-b from-sky-400 via-sky-500 to-indigo-500 text-white overflow-y-auto relative">
+            <div class="absolute top-6 left-5 text-3xl opacity-80 float-slow pointer-events-none">☁️</div>
+            <div class="absolute top-12 right-6 text-2xl opacity-90 float-slow pointer-events-none" style="animation-delay: 1s;">⭐</div>
+
+            <div class="text-center mt-2 relative z-10">
+                <div class="w-20 h-20 bg-amber-300 rounded-[1.75rem] mx-auto flex items-center justify-center shadow-lg rotate-3 mb-3 border-4 border-white">
+                    <span class="text-5xl">📚</span>
+                </div>
+                <h1 class="text-3xl font-black tracking-tight drop-shadow-xs">Ödev Takip</h1>
+                <p class="text-sky-100 font-bold mt-1 text-sm sm:text-base">2-D Sınıfı Ödev, Kitap ve Yıldız Sistemi</p>
+            </div>
+
+            <!-- Giriş Kartı -->
+            <div class="bg-white text-slate-800 rounded-[2rem] p-5 shadow-xl my-4 relative z-10 border-4 border-sky-100">
+                <!-- Rol Sekmeleri -->
+                <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl mb-5">
+                    <button id="tab-parent" onclick="switchLoginTab('parent')" class="py-3 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 bg-emerald-500 text-white shadow-md transition">
+                        <span>👨‍👩‍👧‍👦</span> Veli / Öğrenci
+                    </button>
+                    <button id="tab-teacher" onclick="switchLoginTab('teacher')" class="py-3 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 text-slate-600 hover:bg-slate-200/70 transition">
+                        <span>👩‍🏫</span> Öğretmen Girişi
+                    </button>
+                </div>
+
+                <!-- Veli / Öğrenci Giriş Formu -->
+                <div id="form-parent" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-extrabold text-slate-700 mb-1.5">1. Öğrenci Seçiniz (2-D Sınıfı)</label>
+                        <div class="relative">
+                            <select id="select-student-login" onchange="onStudentSelectChange()" class="w-full px-4 py-3.5 bg-amber-50/70 border-2 border-amber-300 focus:border-emerald-500 rounded-2xl text-sm sm:text-base font-black text-slate-800 outline-none appearance-none cursor-pointer">
+                                <option value="">-- Öğrenci Adını Seçin --</option>
+                            </select>
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none font-black">▼</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-sm font-extrabold text-slate-700">2. Giriş Şifreniz</label>
+                            <span class="text-[11px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">İlk şifre: Okul No</span>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🔑</span>
+                            <input type="password" inputmode="numeric" id="input-student-pin" onkeydown="if(event.key==='Enter') handleParentLogin()" placeholder="Okul numaranızı yazın" class="w-full pl-12 pr-4 py-3.5 bg-amber-50/70 border-2 border-amber-300 focus:border-emerald-500 rounded-2xl text-lg font-black tracking-wider outline-none transition">
+                        </div>
+                    </div>
+
+                    <label class="flex items-center gap-2.5 cursor-pointer select-none px-1">
+                        <input type="checkbox" id="chk-remember-me" checked class="w-4 h-4 accent-emerald-600 rounded">
+                        <span class="text-xs font-extrabold text-slate-600">Beni Hatırla (Tekrar şifre sorma)</span>
+                    </label>
+
+                    <button onclick="handleParentLogin()" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 active:scale-[0.99] text-white font-black text-lg rounded-2xl shadow-lg shadow-emerald-200 transition flex items-center justify-center gap-2">
+                        Giriş Yap 🚀
+                    </button>
+                </div>
+
+                <!-- Öğretmen Giriş Formu -->
+                <div id="form-teacher" class="hidden space-y-4">
+                    <div class="bg-sky-50 border border-sky-200 rounded-2xl p-3 text-center">
+                        <span class="text-xs font-extrabold text-sky-800">2-D Sınıf Öğretmeni Yönetim Paneli</span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-extrabold text-slate-700 mb-1.5">Öğretmen Şifresi</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🔐</span>
+                            <input type="password" id="input-teacher-pin" placeholder="Şifrenizi girin" onkeydown="if(event.key==='Enter') handleTeacherLogin()" class="w-full pl-12 pr-4 py-3.5 bg-sky-50 border-2 border-sky-200 focus:border-sky-500 rounded-2xl text-lg font-black outline-none">
+                        </div>
+                    </div>
+                    <button onclick="handleTeacherLogin()" class="w-full py-4 bg-sky-600 hover:bg-sky-700 active:scale-[0.99] text-white font-black text-lg rounded-2xl shadow-lg shadow-sky-200 transition flex items-center justify-center gap-2">
+                        Öğretmen Panelini Aç 👩‍🏫
+                    </button>
+                </div>
+            </div>
+
+            <p class="text-center text-xs text-sky-100 font-bold relative z-10">
+                2-D Sınıfı • Günlük Ödev, Okuma ve Yıldız Takip Sistemi
+            </p>
+        </div>
+
+        <!-- ==================== 2. ÖĞRENCİ / VELİ EKRANI ==================== -->
+        <div id="screen-parent" class="hidden flex-1 flex flex-col overflow-hidden bg-[#fffdf7]">
+            <!-- Üst Başlık: Sol Tarafta Karşılama, SAĞ ÜSTTE Çocuğun Fotoğrafı/Avatarı -->
+            <div class="bg-gradient-to-br from-sky-400 via-teal-400 to-emerald-400 text-white p-4 sm:p-5 rounded-b-[2.25rem] shadow-md shrink-0 relative overflow-hidden">
+                <span class="absolute -left-2 -top-2 text-5xl opacity-15 pointer-events-none">⭐</span>
+                <span class="absolute right-24 bottom-2 text-4xl opacity-15 pointer-events-none">☁️</span>
+
+                <div class="flex items-center justify-between gap-3 mb-3.5 relative z-10">
+                    <!-- SOL: Karşılama & Çıkış -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="bg-white/25 backdrop-blur-xs text-white text-[11px] font-black px-2.5 py-0.5 rounded-full">
+                                2-D Sınıfı • No: <span id="parent-student-no">5</span>
+                            </span>
+                            <button onclick="logout()" class="px-2.5 py-0.5 bg-black/15 hover:bg-black/25 rounded-full text-[11px] font-extrabold flex items-center gap-1 transition">
+                                <i class="ph-bold ph-sign-out"></i> Çıkış
+                            </button>
+                        </div>
+                        <h2 id="parent-student-greeting" class="text-xl sm:text-2xl font-black leading-tight truncate drop-shadow-xs">
+                            Merhaba Asel! 👋
+                        </h2>
+                        <p class="text-xs font-bold text-teal-50 mt-0.5">Ödevlerini tamamla ve kitabını oku!</p>
+                    </div>
+
+                    <!-- SAĞ ÜST: ÇOCUĞUN PROFİL FOTOĞRAFI / AVATARI -->
+                    <button onclick="openAvatarModal()" title="Fotoğrafını veya karakterini değiştir" class="relative group shrink-0 focus:outline-none">
+                        <div class="w-16 h-16 sm:w-[70px] sm:h-[70px] rounded-full bg-amber-100 border-4 border-amber-300 shadow-lg flex items-center justify-center overflow-hidden transition transform group-hover:scale-105">
+                            <span id="parent-avatar-emoji" class="text-4xl">🦁</span>
+                            <img id="parent-avatar-img" src="" alt="Öğrenci Fotoğrafı" class="hidden w-full h-full object-cover">
+                        </div>
+                        <span class="absolute -bottom-1 -right-1 w-7 h-7 bg-amber-400 text-amber-950 rounded-full border-2 border-white shadow flex items-center justify-center text-xs font-black">
+                            📷
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Yıldız Kumbaram & Kitap Özeti -->
+                <div class="bg-white/95 text-slate-800 rounded-2xl p-3 shadow-sm border-2 border-amber-200 relative z-10 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-black uppercase tracking-wider text-amber-600 flex items-center gap-1">
+                            🏆 Yıldız Kumbaram
+                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-black text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full">
+                                📚 <span id="parent-total-books-badge">0</span> Kitap
+                            </span>
+                            <span class="text-xs font-black text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full">
+                                ⭐ <span id="parent-star-count">0</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
+                        <div id="parent-star-bar" class="h-full bg-gradient-to-r from-amber-400 via-orange-400 to-pink-400 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                    </div>
+                    <p id="parent-star-msg" class="text-[11px] font-extrabold text-slate-600">
+                        🌟 Ödevlerini yapıp fotoğrafını gönder, yıldızları topla!
+                    </p>
+                </div>
+
+                <!-- Veli Alt Sekme Geçişi: Günlük Ödevlerim / Okuduğum Kitaplar -->
+                <div class="grid grid-cols-2 gap-2 mt-3 relative z-10 bg-black/15 p-1 rounded-2xl">
+                    <button id="p-tab-homeworks" onclick="switchParentMainTab('homeworks')" class="py-2.5 px-3 rounded-xl font-black text-xs sm:text-sm bg-white text-teal-800 shadow transition flex items-center justify-center gap-1.5">
+                        <span>📝</span> Günlük Ödevlerim
+                    </button>
+                    <button id="p-tab-books" onclick="switchParentMainTab('books')" class="py-2.5 px-3 rounded-xl font-black text-xs sm:text-sm text-white hover:bg-white/15 transition flex items-center justify-center gap-1.5">
+                        <span>📚</span> Okuduğum Kitaplar
+                    </button>
+                </div>
+            </div>
+
+            <!-- VELİ SEKME 1: DUYURULAR VE GÜNLÜK ÖDEVLER -->
+            <div id="parent-view-homeworks" class="flex-1 overflow-y-auto p-4 space-y-5 pb-10">
+                <!-- Sınıf Duyuruları Bölümü -->
+                <div id="parent-ann-section" class="space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-base font-black text-slate-800 flex items-center gap-1.5">
+                            <span>📢</span> Sınıf Duyuruları
+                            <span id="parent-unread-ann-badge" class="hidden bg-rose-500 text-white text-[11px] font-black px-2 py-0.5 rounded-full animate-bounce">Yeni</span>
+                        </h3>
+                        <button onclick="toggleAllAnnouncements()" id="btn-toggle-ann" class="text-xs font-extrabold text-sky-700 hover:underline">
+                            Tümünü Gör
+                        </button>
+                    </div>
+                    <div id="parent-announcement-list" class="space-y-2.5"></div>
+                </div>
+
+                <!-- Bugünün Ödevleri Bölümü -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between pt-1">
+                        <h3 class="text-lg font-black text-slate-800 flex items-center gap-1.5">
+                            <span>📝</span> Günlük Ödevler
+                        </h3>
+                        <span id="parent-today-date" class="text-xs font-extrabold bg-purple-100 text-purple-800 px-3 py-1 rounded-full">2-D Sınıfı</span>
+                    </div>
+
+                    <div id="parent-homework-list" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- VELİ SEKME 2: OKUDUĞUM KİTAPLAR -->
+            <div id="parent-view-books" class="hidden flex-1 overflow-y-auto p-4 space-y-4 pb-10">
+                <!-- Üst İstatistik Kartları -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-2xl p-3.5 text-center">
+                        <div class="text-2xl font-black text-indigo-700" id="parent-book-stat-count">0</div>
+                        <div class="text-xs font-extrabold text-indigo-900">Okunan Kitap</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-3.5 text-center">
+                        <div class="text-2xl font-black text-amber-700" id="parent-book-stat-pages">0</div>
+                        <div class="text-xs font-extrabold text-amber-900">Toplam Sayfa</div>
+                    </div>
+                </div>
+
+                <!-- Yeni Kitap Ekleme Formu -->
+                <div class="bg-white rounded-[1.75rem] p-4 shadow-sm border-2 border-indigo-200 space-y-3">
+                    <h3 class="text-base font-black text-indigo-950 flex items-center gap-2">
+                        <span>📖</span> Yeni Okuduğum Kitabı Ekle
+                    </h3>
+
+                    <div class="space-y-2.5">
+                        <div>
+                            <label class="block text-xs font-extrabold text-slate-600 mb-1">Kitabın Adı *</label>
+                            <input type="text" id="book-input-title" placeholder="Örn: Küçük Prens" class="w-full px-3.5 py-2.5 bg-indigo-50/40 border-2 border-indigo-100 focus:border-indigo-500 rounded-xl text-sm font-bold outline-none">
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div>
+                                <label class="block text-xs font-extrabold text-slate-600 mb-1">Yazarı *</label>
+                                <input type="text" id="book-input-author" placeholder="Örn: Antoine de Saint-Exupéry" class="w-full px-3.5 py-2.5 bg-indigo-50/40 border-2 border-indigo-100 focus:border-indigo-500 rounded-xl text-sm font-bold outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-extrabold text-slate-600 mb-1">Sayfa Sayısı *</label>
+                                    <input type="number" inputmode="numeric" id="book-input-pages" min="1" placeholder="Örn: 64" class="w-full px-3 py-2.5 bg-indigo-50/40 border-2 border-indigo-100 focus:border-indigo-500 rounded-xl text-sm font-bold outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-extrabold text-slate-600 mb-1">Okuma Tarihi</label>
+                                    <input type="date" id="book-input-date" class="w-full px-2.5 py-2.5 bg-indigo-50/40 border-2 border-indigo-100 focus:border-indigo-500 rounded-xl text-xs font-bold outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-extrabold text-slate-600 mb-1">Kitap Hakkında Kısa Notum (İsteğe bağlı)</label>
+                            <input type="text" id="book-input-note" placeholder="Kitapta en çok neyi sevdin?" class="w-full px-3.5 py-2 bg-slate-50 border-2 border-slate-100 focus:border-indigo-500 rounded-xl text-xs sm:text-sm font-bold outline-none">
+                        </div>
+
+                        <button onclick="addStudentBook()" class="w-full py-3.5 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 active:scale-[0.99] text-white font-black text-sm sm:text-base rounded-2xl shadow-md shadow-indigo-200 transition flex items-center justify-center gap-2">
+                            <span>📚</span> Kitabı Listeme Ekle (+1⭐)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Okunan Kitaplar Listesi -->
+                <div class="space-y-2.5">
+                    <h4 class="text-sm font-black text-slate-800 px-1">Okuduğum Kitaplar Listesi</h4>
+                    <div id="parent-books-list" class="space-y-2.5"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 3. ÖĞRETMEN EKRANI ==================== -->
+        <div id="screen-teacher" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-50">
+            <!-- Öğretmen Üst Bar -->
+            <div class="bg-gradient-to-r from-sky-600 to-indigo-600 text-white p-4 sm:p-5 rounded-b-[2rem] shadow-md shrink-0">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-[11px] font-extrabold uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full">Öğretmen Paneli</span>
+                            <span id="db-status-badge" class="text-[10px] font-black bg-emerald-500/90 text-white px-2 py-0.5 rounded-full">🟢 Bulut Bağlanıyor...</span>
+                        </div>
+                        <h2 class="text-xl font-black mt-1">2-D Sınıfı • Ödev Takip</h2>
+                    </div>
+                    <button onclick="logout()" class="px-3 py-2 bg-white/15 hover:bg-white/25 rounded-xl text-xs font-extrabold flex items-center gap-1 transition">
+                        <i class="ph-bold ph-sign-out text-base"></i> Çıkış
+                    </button>
+                </div>
+
+                <!-- Öğretmen 5 Sekmeli Menü -->
+                <div class="grid grid-cols-5 gap-1 bg-black/15 p-1 rounded-2xl">
+                    <button id="t-tab-check" onclick="switchTeacherTab('check')" class="py-2 px-1 rounded-xl text-[10px] sm:text-[11px] font-black bg-white text-sky-700 shadow transition flex flex-col items-center justify-center gap-0.5">
+                        <div class="flex items-center gap-0.5">
+                            <span>✅ Ödev</span>
+                            <span id="pending-count-badge" class="bg-emerald-500 text-white text-[9px] px-1 rounded-full">0</span>
+                        </div>
+                    </button>
+                    <button id="t-tab-ann" onclick="switchTeacherTab('ann')" class="py-2 px-1 rounded-xl text-[10px] sm:text-[11px] font-black text-white/90 hover:bg-white/10 transition flex flex-col items-center justify-center gap-0.5">
+                        <span>📢 Duyuru</span>
+                    </button>
+                    <button id="t-tab-books" onclick="switchTeacherTab('books')" class="py-2 px-1 rounded-xl text-[10px] sm:text-[11px] font-black text-white/90 hover:bg-white/10 transition flex flex-col items-center justify-center gap-0.5">
+                        <span>📚 Kitap</span>
+                    </button>
+                    <button id="t-tab-reports" onclick="switchTeacherTab('reports')" class="py-2 px-1 rounded-xl text-[10px] sm:text-[11px] font-black text-white/90 hover:bg-white/10 transition flex flex-col items-center justify-center gap-0.5">
+                        <span>📊 Rapor</span>
+                    </button>
+                    <button id="t-tab-class" onclick="switchTeacherTab('class')" class="py-2 px-1 rounded-xl text-[10px] sm:text-[11px] font-black text-white/90 hover:bg-white/10 transition flex flex-col items-center justify-center gap-0.5">
+                        <span>👧👦 Sınıf</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEKME 1: ÖDEVLER & KONTROL -->
+            <div id="teacher-view-check" class="flex-1 overflow-y-auto p-4 space-y-4 pb-10">
+                <!-- Yeni Günlük Ödev Ver Açılır Kartı -->
+                <details class="bg-white rounded-2xl border-2 border-sky-200 shadow-xs group">
+                    <summary class="p-3.5 font-black text-sm text-sky-900 cursor-pointer flex items-center justify-between select-none">
+                        <span class="flex items-center gap-2">➕ Yeni Günlük Ödev Ver</span>
+                        <span class="text-xs font-extrabold text-sky-600 bg-sky-50 px-2.5 py-1 rounded-lg">Aç / Kapat</span>
+                    </summary>
+                    <div class="p-4 pt-1 border-t border-slate-100 space-y-3">
+                        <div class="grid grid-cols-3 gap-1.5" id="subject-selector">
+                            <button type="button" onclick="selectSubject(event, 'Türkçe', '📘')" class="subj-btn p-2 rounded-xl border-2 border-sky-500 bg-sky-50 text-sky-800 font-extrabold text-xs flex items-center justify-center gap-1">
+                                <span>📘</span> Türkçe
+                            </button>
+                            <button type="button" onclick="selectSubject(event, 'Matematik', '📐')" class="subj-btn p-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-extrabold text-xs flex items-center justify-center gap-1">
+                                <span>📐</span> Matematik
+                            </button>
+                            <button type="button" onclick="selectSubject(event, 'Hayat Bilgisi', '🌍')" class="subj-btn p-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-extrabold text-xs flex items-center justify-center gap-1">
+                                <span>🌍</span> Hayat B.
+                            </button>
+                            <button type="button" onclick="selectSubject(event, 'İngilizce', '🇬🇧')" class="subj-btn p-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-extrabold text-xs flex items-center justify-center gap-1">
+                                <span>🇬🇧</span> İngilizce
+                            </button>
+                            <button type="button" onclick="selectSubject(event, 'Görsel Sanatlar', '🎨')" class="subj-btn p-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-extrabold text-xs flex items-center justify-center gap-1">
+                                <span>🎨</span> Görsel S.
+                            </button>
+                            <button type="button" onclick="selectSubject(event, 'Serbest Etkinlik', '🧩')" class="subj-btn p-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-extrabold text-xs flex items-center justify-center gap-1">
+                                <span>🧩</span> Serbest E.
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="text" id="new-hw-title" placeholder="Ödev başlığı (Örn: Sayfa 42)" class="sm:col-span-2 px-3.5 py-2.5 bg-slate-50 border-2 border-slate-200 focus:border-sky-500 rounded-xl text-xs sm:text-sm font-bold outline-none">
+                            <input type="date" id="new-hw-date" class="px-3 py-2.5 bg-slate-50 border-2 border-slate-200 focus:border-sky-500 rounded-xl text-xs font-bold outline-none">
+                        </div>
+
+                        <textarea id="new-hw-desc" rows="2" placeholder="Veli ve öğrencinin göreceği ödev açıklaması..." class="w-full px-3.5 py-2 bg-slate-50 border-2 border-slate-200 focus:border-sky-500 rounded-xl text-xs sm:text-sm font-bold outline-none"></textarea>
+
+                        <button onclick="addNewHomework()" class="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white font-black text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-paper-plane-tilt text-base"></i> Tüm 2-D Sınıfına Gönder
+                        </button>
+                    </div>
+                </details>
+
+                <!-- Ödev Filtresi & Durum Filtresi -->
+                <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[11px] font-extrabold text-slate-500 uppercase">Kontrol Edilecek Ödev:</label>
+                        <button onclick="deleteSelectedHomework()" id="btn-delete-selected-hw" class="hidden text-[11px] font-extrabold text-rose-600 hover:underline">
+                            🗑️ Seçili Ödevi Sil
+                        </button>
+                    </div>
+                    <select id="teacher-hw-filter" onchange="renderTeacherCheckView()" class="w-full px-3 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs sm:text-sm font-black text-slate-800 outline-none">
+                        <option value="ALL">Tüm Aktif Ödevler</option>
+                    </select>
+
+                    <!-- Durum Filtre Hapları -->
+                    <div class="grid grid-cols-3 gap-1.5 pt-1">
+                        <button onclick="setStudentStatusFilter('ALL')" id="st-filter-ALL" class="py-1.5 rounded-xl text-xs font-black bg-sky-600 text-white transition">Tümü (22)</button>
+                        <button onclick="setStudentStatusFilter('SUBMITTED')" id="st-filter-SUBMITTED" class="py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-600 hover:bg-slate-200 transition">Gönderenler</button>
+                        <button onclick="setStudentStatusFilter('PENDING')" id="st-filter-PENDING" class="py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-600 hover:bg-slate-200 transition">Bekleyenler</button>
+                    </div>
+                </div>
+
+                <!-- Özet İstatistik Kartları -->
+                <div id="teacher-stats-bar" class="grid grid-cols-3 gap-2 text-center"></div>
+
+                <!-- Öğrenci Gönderim Listesi -->
+                <div id="teacher-student-list" class="space-y-2.5"></div>
+            </div>
+
+            <!-- SEKME 2: DUYURULAR YÖNETİMİ -->
+            <div id="teacher-view-ann" class="hidden flex-1 overflow-y-auto p-4 space-y-4 pb-10">
+                <div class="bg-white rounded-3xl p-4 shadow-xs border border-slate-200 space-y-3">
+                    <h3 class="text-base font-black text-slate-800 flex items-center gap-2">
+                        <span>📢</span> Velilere Yeni Duyuru Yayınla
+                    </h3>
+
+                    <div class="grid grid-cols-4 gap-1.5">
+                        <button type="button" onclick="selectAnnType(event, 'Gezi / İzin', '🚌', 'amber')" class="ann-type-btn p-2 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-900 font-extrabold text-[11px] flex flex-col items-center gap-0.5">
+                            <span class="text-base">🚌</span> Gezi/İzin
+                        </button>
+                        <button type="button" onclick="selectAnnType(event, 'Etkinlik', '🎉', 'purple')" class="ann-type-btn p-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-extrabold text-[11px] flex flex-col items-center gap-0.5">
+                            <span class="text-base">🎉</span> Etkinlik
+                        </button>
+                        <button type="button" onclick="selectAnnType(event, 'Hatırlatma', '📌', 'rose')" class="ann-type-btn p-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-extrabold text-[11px] flex flex-col items-center gap-0.5">
+                            <span class="text-base">📌</span> Hatırlatma
+                        </button>
+                        <button type="button" onclick="selectAnnType(event, 'Genel', '📣', 'sky')" class="ann-type-btn p-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-extrabold text-[11px] flex flex-col items-center gap-0.5">
+                            <span class="text-base">📣</span> Genel
+                        </button>
+                    </div>
+
+                    <input type="text" id="new-ann-title" placeholder="Duyuru başlığı..." class="w-full px-3.5 py-2.5 bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl text-sm font-bold outline-none">
+                    <textarea id="new-ann-desc" rows="2" placeholder="Velilerin okuyacağı kısa mesaj..." class="w-full px-3.5 py-2 bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl text-sm font-bold outline-none"></textarea>
+
+                    <button onclick="publishAnnouncement()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                        <span>📢</span> Duyuruyu Yayınla
+                    </button>
+                </div>
+
+                <div class="space-y-2.5">
+                    <h4 class="text-xs font-black uppercase text-slate-500 px-1">Yayındaki Duyurular & Veli Okuma Durumu</h4>
+                    <div id="teacher-ann-list" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- SEKME 3: KİTAP TAKİBİ -->
+            <div id="teacher-view-books" class="hidden flex-1 overflow-y-auto p-4 space-y-4 pb-10">
+                <div id="teacher-books-summary" class="grid grid-cols-3 gap-2 text-center"></div>
+
+                <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-xs space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <h3 class="text-sm font-black text-slate-800">📚 Okunan Kitaplar</h3>
+                        <select id="teacher-book-student-filter" onchange="renderTeacherBooksView()" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none max-w-[180px]">
+                            <option value="ALL">Tüm Öğrenciler</option>
+                        </select>
+                    </div>
+                    <p class="text-[11px] font-bold text-slate-500">Öğrencilerin eklediği kitaplara tek dokunuşla tebrik yıldızı verebilirsiniz.</p>
+                </div>
+
+                <div id="teacher-books-list" class="space-y-2.5"></div>
+            </div>
+
+            <!-- SEKME 4: AYLIK RAPORLAMA -->
+            <div id="teacher-view-reports" class="hidden flex-1 overflow-y-auto p-4 space-y-4 pb-10">
+                <div id="printable-report-area" class="space-y-4">
+                    <div class="bg-white rounded-2xl p-4 border-2 border-indigo-200 shadow-xs space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <h3 class="text-base font-black text-indigo-950">📊 Aylık Sınıf Performans Raporu</h3>
+                                <p class="text-[11px] font-bold text-slate-500">2-D Sınıfı aylık ödev, yıldız ve kitap okuma dökümü</p>
+                            </div>
+                            <input type="month" id="report-month-picker" onchange="renderMonthlyReport()" class="px-3 py-2 bg-indigo-50 border-2 border-indigo-200 rounded-xl text-xs sm:text-sm font-black text-indigo-900 outline-none">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button onclick="exportMonthlyReportCSV()" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 transition">
+                                <span>📥</span> Excel (CSV) İndir
+                            </button>
+                            <button onclick="window.print()" class="py-2.5 px-3 bg-slate-700 hover:bg-slate-800 text-white font-black text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 transition">
+                                <span>🖨️</span> Yazdır / PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="report-summary-cards" class="grid grid-cols-2 gap-2.5"></div>
+                    <div id="report-highlights" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                        <div class="p-3 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
+                            <span class="text-xs font-black text-slate-700">Öğrenci Bazlı Aylık Döküm</span>
+                            <span id="report-selected-month-label" class="text-[11px] font-extrabold text-indigo-700"></span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-600 uppercase">
+                                        <th class="py-2.5 px-2.5">No / Öğrenci</th>
+                                        <th class="py-2.5 px-2 text-center">Ödev</th>
+                                        <th class="py-2.5 px-2 text-center">Yıldız</th>
+                                        <th class="py-2.5 px-2 text-center">Kitap</th>
+                                        <th class="py-2.5 px-2.5 text-center">Sayfa</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-table-body" class="divide-y divide-slate-100 text-xs"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEKME 5: SINIF LİSTESİ & VERİTABANI DURUMU -->
+            <div id="teacher-view-class" class="hidden flex-1 overflow-y-auto p-4 space-y-4 pb-10">
+                <!-- Veritabanı Bilgi Kartı -->
+                <div id="db-info-card" class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-3.5 text-xs space-y-1">
+                    <div class="font-black text-emerald-900 flex items-center gap-1.5" id="db-info-title">
+                        🟢 Bulut Veritabanı Bağlı (odev-takip-2d)
+                    </div>
+                    <p class="font-semibold text-emerald-800" id="db-info-desc">
+                        Tüm ödev fotoğrafları, yıldızlar, kitaplar ve duyurular gerçek zamanlı olarak buluta kaydedilmektedir.
+                    </p>
+                </div>
+
+                <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-3.5 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-black text-sky-900">2-D Sınıf Listesi (<span id="roster-total-count">22</span> Öğrenci)</h3>
+                        <p class="text-[11px] font-bold text-sky-700">Öğrenci şifrelerini buradan düzenleyebilirsiniz.</p>
+                    </div>
+                    <button onclick="openAddStudentModal()" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-black rounded-xl shadow-xs transition">
+                        + Öğrenci Ekle
+                    </button>
+                </div>
+
+                <div id="teacher-roster-list" class="space-y-2"></div>
+            </div>
+        </div>
+
+        <!-- ==================== 4. MODAL: ÇOCUK PROFİL FOTOĞRAFI / AVATAR SEÇİCİ ==================== -->
+        <div id="modal-avatar" class="hidden fixed sm:absolute inset-0 bg-slate-900/70 backdrop-blur-xs z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div class="bg-white w-full rounded-t-[2rem] sm:rounded-3xl p-6 space-y-4 pop-in max-h-[90%] overflow-y-auto">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-black text-slate-800">Profil Resmini Seç 🌟</h3>
+                    <button onclick="closeAvatarModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold">✕</button>
+                </div>
+                <p class="text-xs font-bold text-slate-500">Kendi fotoğrafını yükleyebilir veya aşağıdaki sevimli karakterlerden birini seçebilirsin:</p>
+
+                <div class="grid grid-cols-4 gap-2.5">
+                    <button onclick="selectPresetAvatar('🦁')" class="p-3 bg-amber-50 hover:bg-amber-100 border-2 border-amber-200 rounded-2xl text-3xl flex items-center justify-center transition">🦁</button>
+                    <button onclick="selectPresetAvatar('🦄')" class="p-3 bg-pink-50 hover:bg-pink-100 border-2 border-pink-200 rounded-2xl text-3xl flex items-center justify-center transition">🦄</button>
+                    <button onclick="selectPresetAvatar('🚀')" class="p-3 bg-sky-50 hover:bg-sky-100 border-2 border-sky-200 rounded-2xl text-3xl flex items-center justify-center transition">🚀</button>
+                    <button onclick="selectPresetAvatar('🐼')" class="p-3 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 rounded-2xl text-3xl flex items-center justify-center transition">🐼</button>
+                    <button onclick="selectPresetAvatar('🦊')" class="p-3 bg-orange-50 hover:bg-orange-100 border-2 border-orange-200 rounded-2xl text-3xl flex items-center justify-center transition">🦊</button>
+                    <button onclick="selectPresetAvatar('🌈')" class="p-3 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-2xl text-3xl flex items-center justify-center transition">🌈</button>
+                    <button onclick="selectPresetAvatar('🐱')" class="p-3 bg-yellow-50 hover:bg-yellow-100 border-2 border-yellow-200 rounded-2xl text-3xl flex items-center justify-center transition">🐱</button>
+                    <button onclick="selectPresetAvatar('🦖')" class="p-3 bg-lime-50 hover:bg-lime-100 border-2 border-lime-200 rounded-2xl text-3xl flex items-center justify-center transition">🦖</button>
+                </div>
+
+                <label class="block w-full cursor-pointer pt-2">
+                    <input type="file" accept="image/*" onchange="handleProfilePhotoUpload(event)" class="hidden">
+                    <div class="w-full py-3.5 bg-sky-500 hover:bg-sky-600 text-white font-black text-sm rounded-2xl shadow-md flex items-center justify-center gap-2 transition">
+                        <i class="ph-fill ph-camera text-xl"></i> Kendi Fotoğrafını Yükle / Çek
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- ==================== 5. MODAL: VELİ ÖDEV YÜKLEME ==================== -->
+        <div id="modal-upload" class="hidden fixed sm:absolute inset-0 bg-slate-900/70 backdrop-blur-xs z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div class="bg-white w-full rounded-t-[2rem] sm:rounded-3xl p-6 space-y-4 pop-in max-h-[90%] overflow-y-auto">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-black text-slate-800">Ödev Fotoğrafı Gönder 📸</h3>
+                    <button onclick="closeUploadModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold">✕</button>
+                </div>
+
+                <p id="upload-hw-name" class="text-sm font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3.5 py-2.5 rounded-2xl"></p>
+
+                <div id="upload-processing" class="hidden py-6 text-center space-y-2">
+                    <div class="text-3xl animate-spin inline-block">⏳</div>
+                    <p class="text-sm font-black text-slate-700">Fotoğraf hazırlanıyor ve öğretmene gönderiliyor...</p>
+                </div>
+
+                <div id="upload-actions" class="space-y-3">
+                    <!-- Kamera ile doğrudan çekim -->
+                    <label class="block w-full cursor-pointer">
+                        <input type="file" accept="image/*" capture="environment" onchange="handleRealFileUpload(event)" class="hidden">
+                        <div class="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl shadow-lg flex flex-col items-center justify-center gap-1 transition">
+                            <i class="ph-fill ph-camera text-3xl"></i>
+                            <span class="font-black text-base">Kamerayı Aç ve Fotoğraf Çek</span>
+                            <span class="text-xs text-emerald-100 font-bold">Defterin veya kitabın fotoğrafını çekin</span>
+                        </div>
+                    </label>
+
+                    <!-- Galeriden fotoğraf seçimi -->
+                    <label class="block w-full cursor-pointer">
+                        <input type="file" accept="image/*" onchange="handleRealFileUpload(event)" class="hidden">
+                        <div class="w-full py-3.5 bg-sky-50 hover:bg-sky-100 text-sky-900 border-2 border-sky-200 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition">
+                            <i class="ph-bold ph-image text-xl"></i> Galeriden Fotoğraf Seç
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 6. MODAL: ÖĞRETMEN ÖDEV İNCELEME & PUANLAMA ==================== -->
+        <div id="modal-review" class="hidden fixed sm:absolute inset-0 bg-slate-900/75 backdrop-blur-xs z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div class="bg-white w-full rounded-t-[2rem] sm:rounded-3xl p-5 space-y-4 pop-in max-h-[94%] overflow-y-auto">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                        <h3 id="review-student-name" class="text-base sm:text-lg font-black text-slate-800">Öğrenci Adı</h3>
+                        <p id="review-hw-title" class="text-xs font-bold text-sky-600">Ders - Ödev Başlığı</p>
+                    </div>
+                    <button onclick="closeReviewModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-black">✕</button>
+                </div>
+
+                <!-- Yüklenen Ödev Fotoğrafı Önizleme -->
+                <div class="bg-slate-900 rounded-2xl overflow-hidden border-2 border-slate-200 relative">
+                    <div id="review-photo-container" class="w-full max-h-72 flex items-center justify-center overflow-auto"></div>
+                    <span id="review-timestamp-badge" class="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">
+                        Gönderim saati
+                    </span>
+                </div>
+
+                <!-- Hızlı Övgü Cümleleri & Öğretmen Notu -->
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-500 mb-1.5">Hızlı Övgü Seç veya Not Yaz:</label>
+                    <div class="flex flex-wrap gap-1.5 mb-2">
+                        <button type="button" onclick="setQuickNote('Yazın çok güzel! 🌟')" class="text-[11px] font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full transition">
+                            + Yazın çok güzel!
+                        </button>
+                        <button type="button" onclick="setQuickNote('Hepsi doğru! 👏')" class="text-[11px] font-extrabold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full transition">
+                            + Hepsi doğru!
+                        </button>
+                        <button type="button" onclick="setQuickNote('Ellerine sağlık! 💖')" class="text-[11px] font-extrabold bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 px-2.5 py-1 rounded-full transition">
+                            + Ellerine sağlık!
+                        </button>
+                        <button type="button" onclick="setQuickNote('Çok düzenli! ✨')" class="text-[11px] font-extrabold bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 px-2.5 py-1 rounded-full transition">
+                            + Çok düzenli!
+                        </button>
+                    </div>
+                    <input type="text" id="review-teacher-note" placeholder="Öğrenciye mesajınız..." class="w-full px-3.5 py-2.5 bg-slate-50 border-2 border-slate-200 focus:border-sky-500 rounded-xl text-sm font-bold outline-none">
+                </div>
+
+                <!-- Tek Dokunuşla Geri Dönüt Butonları -->
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-500 mb-2">Geri Dönüt Seçin (Anında Kaydedilir):</label>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button onclick="submitReview('⭐ Yıldız!', 1)" class="p-3 bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 rounded-2xl flex items-center gap-2.5 transition active:scale-95">
+                            <span class="text-2xl">⭐</span>
+                            <div class="text-left">
+                                <div class="text-sm font-black text-amber-900">Yıldız!</div>
+                                <div class="text-[11px] font-bold text-amber-700">+1 Yıldız Puanı</div>
+                            </div>
+                        </button>
+                        <button onclick="submitReview('👏 Aferin!', 1)" class="p-3 bg-emerald-100 hover:bg-emerald-200 border-2 border-emerald-300 rounded-2xl flex items-center gap-2.5 transition active:scale-95">
+                            <span class="text-2xl">👏</span>
+                            <div class="text-left">
+                                <div class="text-sm font-black text-emerald-900">Aferin!</div>
+                                <div class="text-[11px] font-bold text-emerald-700">+1 Yıldız Puanı</div>
+                            </div>
+                        </button>
+                        <button onclick="submitReview('🏆 Harika!', 2)" class="p-3 bg-purple-100 hover:bg-purple-200 border-2 border-purple-300 rounded-2xl flex items-center gap-2.5 transition active:scale-95">
+                            <span class="text-2xl">🏆</span>
+                            <div class="text-left">
+                                <div class="text-sm font-black text-purple-900">Harika!</div>
+                                <div class="text-[11px] font-bold text-purple-700">+2 Yıldız Puanı</div>
+                            </div>
+                        </button>
+                        <button onclick="submitReview('🔄 Tekrar Bakalım', 0)" class="p-3 bg-rose-100 hover:bg-rose-200 border-2 border-rose-300 rounded-2xl flex items-center gap-2.5 transition active:scale-95">
+                            <span class="text-2xl">🔄</span>
+                            <div class="text-left">
+                                <div class="text-sm font-black text-rose-900">Tekrar Bakalım</div>
+                                <div class="text-[11px] font-bold text-rose-700">Düzeltme Gerekli</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 7. MODAL: YENİ ÖĞRENCİ EKLE / ŞİFRE DÜZENLE ==================== -->
+        <div id="modal-add-student" class="hidden fixed sm:absolute inset-0 bg-slate-900/70 backdrop-blur-xs z-40 flex items-center justify-center p-4">
+            <div class="bg-white w-full rounded-3xl p-5 space-y-4 pop-in">
+                <div class="flex items-center justify-between">
+                    <h3 id="student-modal-title" class="text-lg font-black text-slate-800">Yeni Öğrenci Ekle</h3>
+                    <button onclick="closeAddStudentModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold">✕</button>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-600 mb-1">Okul Numarası</label>
+                        <input type="number" id="add-stu-no" placeholder="Örn: 610" class="w-full px-3.5 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-600 mb-1">Adı Soyadı</label>
+                        <input type="text" id="add-stu-name" placeholder="Örn: ALİ YILMAZ" class="w-full px-3.5 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-600 mb-1">Giriş Şifresi (Boş bırakılırsa okul no olur)</label>
+                        <input type="text" id="add-stu-pin" placeholder="Örn: 610" class="w-full px-3.5 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none">
+                    </div>
+                    <div id="edit-stars-row" class="hidden">
+                        <label class="block text-xs font-extrabold text-slate-600 mb-1">Yıldız Sayısı (Düzenle / Sıfırla)</label>
+                        <input type="number" id="add-stu-stars" min="0" class="w-full px-3.5 py-2.5 bg-amber-50 border-2 border-amber-200 rounded-xl text-sm font-bold outline-none">
+                    </div>
+                </div>
+                <button onclick="saveNewStudent()" class="w-full py-3.5 bg-sky-600 hover:bg-sky-700 text-white font-black text-sm rounded-2xl transition">
+                    Kaydet
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase JS SDK v10.12.2 ve Uygulama Mantığı -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Sizin Firebase Proje Yapılandırmanız
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFewwwITRvQ6j_O5Sp_wV5HMTI5cGyjfg",
+            authDomain: "odev-takip-2d.firebaseapp.com",
+            projectId: "odev-takip-2d",
+            storageBucket: "odev-takip-2d.firebasestorage.app",
+            messagingSenderId: "767819795569",
+            appId: "1:767819795569:web:2b63dda4a6f21014851fd0",
+            measurementId: "G-JC29S4Y619"
+        };
+
+        let db = null;
+        let isCloudConnected = false;
+
+        // 2-D Sınıfı Tam Öğrenci Listesi (22 Öğrenci)
+        const INITIAL_2D_ROSTER = [
+            { no: '5', name: 'ASEL AKDAĞ', avatar: '🦄' },
+            { no: '40', name: 'AYSA ÖZKILINÇ', avatar: '🐱' },
+            { no: '56', name: 'DEMİR ALİ KARDAŞ', avatar: '🦁' },
+            { no: '164', name: 'BAYRAM EFE ALIM', avatar: '🚀' },
+            { no: '173', name: 'CESUR BAŞKÖY', avatar: '🦖' },
+            { no: '190', name: 'MELİSA GENCER', avatar: '🌈' },
+            { no: '192', name: 'ESİLA GEÇİM', avatar: '🐼' },
+            { no: '213', name: 'EGE BÜYÜKKAÇAR', avatar: '🦊' },
+            { no: '241', name: 'JİYAN MUCİZE BAYRAM', avatar: '🦄' },
+            { no: '292', name: 'SARP DAŞDELEN', avatar: '🚀' },
+            { no: '316', name: 'DORUK ALP TUR', avatar: '🦁' },
+            { no: '337', name: 'SEYMEN TAŞDEMİR', avatar: '🦖' },
+            { no: '352', name: 'ASYA BARAN', avatar: '🐱' },
+            { no: '391', name: 'DURU YİĞİTOĞLU', avatar: '🌈' },
+            { no: '446', name: 'AYAZ İNCE', avatar: '🦊' },
+            { no: '463', name: 'İBRAHİM İNAN', avatar: '🦁' },
+            { no: '472', name: 'DOĞA TURAY', avatar: '🐼' },
+            { no: '477', name: 'EYMEN ATEŞ NAVRUZ', avatar: '🚀' },
+            { no: '485', name: 'ALİ DENİZ SÖNMEZ', avatar: '🦖' },
+            { no: '487', name: 'TUANA ADAR BAL', avatar: '🦄' },
+            { no: '525', name: 'ADA ERDENER', avatar: '🐱' },
+            { no: '531', name: 'DEREN TÜRKASLAN', avatar: '🌈' }
+        ];
+
+        const LOCAL_STORAGE_KEY = 'odev_takip_2d_state_v1';
+
+        let appState = {
+            currentUserRole: null,
+            currentStudentNo: null,
+            students: {},
+            homeworks: [],
+            announcements: [],
+            submissions: {},
+            books: []
+        };
+
+        let activeUploadHwId = null;
+        let activeReviewKey = null;
+        let selectedNewSubject = { name: 'Türkçe', icon: '📘' };
+        let selectedNewAnnType = { tag: 'Gezi / İzin', icon: '🚌', color: 'amber' };
+        let showAllAnnouncements = false;
+        let studentStatusFilter = 'ALL';
+        let expandedAnnReceipts = {};
+
+        // ==================== YARDIMCI FONKSİYONLAR ====================
+        window.showToast = function(icon, message) {
+            const box = document.getElementById('toast-box');
+            document.getElementById('toast-icon').textContent = icon;
+            document.getElementById('toast-message').textContent = message;
+            box.classList.remove('hidden');
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                box.classList.add('hidden');
+            }, 3400);
+        };
+
+        function getFirstName(fullName) {
+            if (!fullName) return '';
+            const first = fullName.trim().split(' ')[0];
+            return first.charAt(0).toLocaleUpperCase('tr-TR') + first.slice(1).toLocaleLowerCase('tr-TR');
+        }
+
+        function getTodayYYYYMMDD() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function getCurrentYYYYMM() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            return `${y}-${m}`;
+        }
+
+        function formatTodayTR() {
+            const now = new Date();
+            return now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' });
+        }
+
+        function formatDateTR(yyyyMmDd) {
+            if (!yyyyMmDd) return '';
+            const parts = yyyyMmDd.split('-');
+            if (parts.length !== 3) return yyyyMmDd;
+            const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+            return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        function formatMonthTitleTR(yyyyMm) {
+            if (!yyyyMm) return '';
+            const [y, m] = yyyyMm.split('-');
+            const d = new Date(Number(y), Number(m) - 1, 1);
+            return d.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+        }
+
+        // Fotoğraf Sıkıştırma (Firestore belge sınırı için ideal boyut ~100KB)
+        function compressImageFile(file, maxWidth = 700, quality = 0.65) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = reject;
+                    img.src = event.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function saveToLocalCache() {
+            try {
+                const cacheObj = {
+                    students: appState.students,
+                    homeworks: appState.homeworks,
+                    announcements: appState.announcements,
+                    submissions: appState.submissions,
+                    books: appState.books
+                };
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cacheObj));
+            } catch (e) {
+                console.warn("Yerel önbellek kaydedilemedi:", e);
+            }
+        }
+
+        function updateConnectionBadge(connected, errorReason = '') {
+            isCloudConnected = connected;
+            const badge = document.getElementById('db-status-badge');
+            const infoCard = document.getElementById('db-info-card');
+            const infoTitle = document.getElementById('db-info-title');
+            const infoDesc = document.getElementById('db-info-desc');
+
+            if (connected) {
+                if (badge) {
+                    badge.textContent = '🟢 Bulut Veritabanı Bağlı';
+                    badge.className = 'text-[10px] font-black bg-emerald-500/90 text-white px-2 py-0.5 rounded-full';
+                }
+                if (infoCard) {
+                    infoCard.className = 'bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-3.5 text-xs space-y-1';
+                    infoTitle.className = 'font-black text-emerald-900 flex items-center gap-1.5';
+                    infoTitle.textContent = '🟢 Bulut Veritabanı Bağlı (odev-takip-2d)';
+                    infoDesc.className = 'font-semibold text-emerald-800';
+                    infoDesc.textContent = 'Tüm ödev fotoğrafları, yıldızlar, kitaplar ve duyurular gerçek zamanlı olarak buluta kaydedilmektedir.';
+                }
+            } else {
+                if (badge) {
+                    badge.textContent = '🟡 Yerel Mod - Firestore bekleniyor';
+                    badge.className = 'text-[10px] font-black bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full';
+                }
+                if (infoCard) {
+                    infoCard.className = 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-3.5 text-xs space-y-1';
+                    infoTitle.className = 'font-black text-amber-950 flex items-center gap-1.5';
+                    infoTitle.textContent = '🟡 Yerel Mod - Firestore bekleniyor';
+                    infoDesc.className = 'font-semibold text-amber-900';
+                    infoDesc.textContent = 'Firebase Konsolunda "Firestore Database -> Veritabanı Oluştur -> Test modunda başlat" adımını tamamladığınızda otomatik buluta geçecektir.';
+                }
+            }
+        }
+
+        // ==================== FIREBASE BAŞLATMA & VERİ SENKRONİZASYONU ====================
+        async function initApp() {
+            const todayStr = getTodayYYYYMMDD();
+            document.getElementById('parent-today-date').textContent = formatTodayTR();
+            document.getElementById('book-input-date').value = todayStr;
+            document.getElementById('new-hw-date').value = todayStr;
+            document.getElementById('report-month-picker').value = getCurrentYYYYMM();
+
+            // Önce yerel önbellekten hızlı yükleme yap
+            loadLocalFallbackState();
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+
+                // Firestore'un aktif olup olmadığını test et ve boşsa 2-D sınıfını yükle
+                await seedInitialDataIfEmpty();
+                updateConnectionBadge(true);
+                setupRealtimeListeners();
+            } catch (err) {
+                console.warn("Firestore henüz hazır değil veya izin hatası, yerel modda devam ediliyor:", err);
+                updateConnectionBadge(false);
+                finishLoadingAndRestoreSession();
+            }
+        }
+
+        async function seedInitialDataIfEmpty() {
+            if (!db) return;
+            const studentsCol = collection(db, 'odev_takip_2d_students');
+            const snap = await getDocs(studentsCol);
+
+            if (snap.empty) {
+                for (const st of INITIAL_2D_ROSTER) {
+                    await setDoc(doc(db, 'odev_takip_2d_students', st.no), {
+                        no: st.no,
+                        name: st.name,
+                        avatar: st.avatar,
+                        photoUrl: '',
+                        pin: st.no,
+                        stars: 0
+                    });
+                }
+
+                const hwId = 'hw_initial_1';
+                await setDoc(doc(db, 'odev_takip_2d_homeworks', hwId), {
+                    id: hwId,
+                    subject: 'Türkçe',
+                    icon: '📘',
+                    title: 'Günlük Okuma ve Defter Çalışması',
+                    desc: 'Okuma kitabımızdan 15 dakika sesli okuma yapalım, özetini defterimize yazıp fotoğrafını gönderelim ve okuduğumuz kitabı "Okuduğum Kitaplar" bölümüne ekleyelim.',
+                    date: getTodayYYYYMMDD(),
+                    createdAt: Date.now()
+                });
+
+                const annId = 'ann_initial_1';
+                await setDoc(doc(db, 'odev_takip_2d_announcements', annId), {
+                    id: annId,
+                    tag: 'Hatırlatma',
+                    icon: '📌',
+                    color: 'amber',
+                    date: formatTodayTR(),
+                    title: '2-D Sınıfı Ödev ve Kitap Takip Sistemine Hoş Geldiniz!',
+                    desc: 'Sevgili velilerimiz, günlük ödevlerimizi fotoğraf çekerek gönderebilir, ayrıca "Okuduğum Kitaplar" sekmesinden çocuklarımızın okuduğu kitapları kaydedebilirsiniz.',
+                    readBy: [],
+                    createdAt: Date.now()
+                });
+            }
+        }
+
+        let initialLoadsDone = { students: false, homeworks: false, announcements: false, submissions: false, books: false };
+        function checkAllLoaded() {
+            if (initialLoadsDone.students && initialLoadsDone.homeworks && initialLoadsDone.announcements && initialLoadsDone.submissions && initialLoadsDone.books) {
+                saveToLocalCache();
+                finishLoadingAndRestoreSession();
+            }
+        }
+
+        function setupRealtimeListeners() {
+            if (!db) return;
+
+            const onListenerError = (err) => {
+                console.warn("Firestore dinleyici hatası:", err);
+                updateConnectionBadge(false);
+                finishLoadingAndRestoreSession();
+            };
+
+            onSnapshot(collection(db, 'odev_takip_2d_students'), (snapshot) => {
+                const map = {};
+                snapshot.forEach(d => { map[d.id] = d.data(); });
+                if (Object.keys(map).length > 0) {
+                    appState.students = map;
+                }
+                populateStudentLoginDropdown();
+                populateTeacherBookStudentFilter();
+                refreshActiveViews();
+                initialLoadsDone.students = true;
+                checkAllLoaded();
+            }, onListenerError);
+
+            onSnapshot(collection(db, 'odev_takip_2d_homeworks'), (snapshot) => {
+                const list = [];
+                snapshot.forEach(d => list.push(d.data()));
+                list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                appState.homeworks = list;
+                refreshActiveViews();
+                initialLoadsDone.homeworks = true;
+                checkAllLoaded();
+            }, onListenerError);
+
+            onSnapshot(collection(db, 'odev_takip_2d_announcements'), (snapshot) => {
+                const list = [];
+                snapshot.forEach(d => list.push(d.data()));
+                list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                appState.announcements = list;
+                refreshActiveViews();
+                initialLoadsDone.announcements = true;
+                checkAllLoaded();
+            }, onListenerError);
+
+            onSnapshot(collection(db, 'odev_takip_2d_submissions'), (snapshot) => {
+                const map = {};
+                snapshot.forEach(d => { map[d.id] = d.data(); });
+                appState.submissions = map;
+                refreshActiveViews();
+                initialLoadsDone.submissions = true;
+                checkAllLoaded();
+            }, onListenerError);
+
+            onSnapshot(collection(db, 'odev_takip_2d_books'), (snapshot) => {
+                const list = [];
+                snapshot.forEach(d => list.push(d.data()));
+                list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                appState.books = list;
+                refreshActiveViews();
+                initialLoadsDone.books = true;
+                checkAllLoaded();
+            }, onListenerError);
+        }
+
+        function loadLocalFallbackState() {
+            try {
+                const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.students && Object.keys(parsed.students).length > 0) {
+                        appState.students = parsed.students;
+                        appState.homeworks = parsed.homeworks || [];
+                        appState.announcements = parsed.announcements || [];
+                        appState.submissions = parsed.submissions || {};
+                        appState.books = parsed.books || [];
+                        populateStudentLoginDropdown();
+                        populateTeacherBookStudentFilter();
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn("Yerel veri okunamadı:", e);
+            }
+
+            INITIAL_2D_ROSTER.forEach(st => {
+                appState.students[st.no] = { ...st, photoUrl: '', pin: st.no, stars: 0 };
+            });
+            appState.homeworks = [{
+                id: 'hw_initial_1',
+                subject: 'Türkçe',
+                icon: '📘',
+                title: 'Günlük Okuma ve Defter Çalışması',
+                desc: 'Okuma kitabımızdan 15 dakika sesli okuma yapalım, özetini defterimize yazıp fotoğrafını gönderelim.',
+                date: getTodayYYYYMMDD(),
+                createdAt: Date.now()
+            }];
+            appState.announcements = [{
+                id: 'ann_initial_1',
+                tag: 'Hatırlatma',
+                icon: '📌',
+                color: 'amber',
+                date: formatTodayTR(),
+                title: '2-D Sınıfı Ödev Takip Sistemine Hoş Geldiniz!',
+                desc: 'Günlük ödevlerimizi fotoğraf çekerek gönderebilir, "Okuduğum Kitaplar" sekmesinden okuduğunuz kitapları ekleyebilirsiniz.',
+                readBy: [],
+                createdAt: Date.now()
+            }];
+            populateStudentLoginDropdown();
+            populateTeacherBookStudentFilter();
+        }
+
+        function finishLoadingAndRestoreSession() {
+            document.getElementById('screen-loading').classList.add('hidden');
+            if (appState.currentUserRole) return;
+
+            const savedRole = localStorage.getItem('odev_takip_remember_role');
+            const savedStuNo = localStorage.getItem('odev_takip_remember_stu');
+
+            if (savedRole === 'teacher') {
+                enterTeacherMode();
+            } else if (savedRole === 'parent' && savedStuNo && appState.students[savedStuNo]) {
+                enterParentMode(savedStuNo);
+            } else {
+                document.getElementById('screen-login').classList.remove('hidden');
+            }
+        }
+
+        function refreshActiveViews() {
+            if (appState.currentUserRole === 'parent') {
+                renderParentScreen();
+            } else if (appState.currentUserRole === 'teacher') {
+                renderTeacherCheckView();
+                renderTeacherAnnouncements();
+                renderTeacherBooksView();
+                renderMonthlyReport();
+                renderTeacherRosterList();
+            }
+        }
+
+        // ==================== GİRİŞ EKRANI İŞLEMLERİ ====================
+        function populateStudentLoginDropdown() {
+            const select = document.getElementById('select-student-login');
+            const currentVal = select.value;
+            const sortedStudents = Object.values(appState.students).sort((a, b) => Number(a.no) - Number(b.no));
+
+            select.innerHTML = `<option value="">-- Öğrenci Adını Seçin (${sortedStudents.length} Öğrenci) --</option>`;
+            sortedStudents.forEach(st => {
+                const opt = document.createElement('option');
+                opt.value = st.no;
+                opt.textContent = `${st.no} - ${st.name}`;
+                select.appendChild(opt);
+            });
+            if (currentVal) select.value = currentVal;
+        }
+
+        window.onStudentSelectChange = function() {
+            const no = document.getElementById('select-student-login').value;
+            const pinInput = document.getElementById('input-student-pin');
+            if (no) {
+                pinInput.placeholder = `Örn: ${no}`;
+                pinInput.focus();
+            }
+        };
+
+        window.switchLoginTab = function(role) {
+            const tabP = document.getElementById('tab-parent');
+            const tabT = document.getElementById('tab-teacher');
+            const formP = document.getElementById('form-parent');
+            const formT = document.getElementById('form-teacher');
+
+            if (role === 'parent') {
+                tabP.className = "py-3 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 bg-emerald-500 text-white shadow-md transition";
+                tabT.className = "py-3 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 text-slate-600 hover:bg-slate-200/70 transition";
+                formP.classList.remove('hidden');
+                formT.classList.add('hidden');
+            } else {
+                tabT.className = "py-3 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow-md transition";
+                tabP.className = "py-3 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 text-slate-600 hover:bg-slate-200/70 transition";
+                formT.classList.remove('hidden');
+                formP.classList.add('hidden');
+            }
+        };
+
+        window.handleParentLogin = function() {
+            const no = document.getElementById('select-student-login').value;
+            const pin = document.getElementById('input-student-pin').value.trim();
+
+            if (!no) {
+                showToast('⚠️', 'Lütfen listeden öğrencinizin adını seçin.');
+                return;
+            }
+            const student = appState.students[no];
+            if (!student) {
+                showToast('⚠️', 'Öğrenci kaydı bulunamadı.');
+                return;
+            }
+            if (pin !== String(student.pin)) {
+                showToast('🔒', `Hatalı şifre! İlk giriş şifreniz okul numaranızdır (${no}).`);
+                return;
+            }
+            enterParentMode(no);
+        };
+
+        window.handleTeacherLogin = function() {
+            const pin = document.getElementById('input-teacher-pin').value.trim();
+            if (pin !== 'ogretmen2026') {
+                showToast('🔒', 'Hatalı öğretmen şifresi! Lütfen tekrar deneyin.');
+                return;
+            }
+            enterTeacherMode();
+        };
+
+        function enterParentMode(studentNo) {
+            appState.currentUserRole = 'parent';
+            appState.currentStudentNo = studentNo;
+            if (document.getElementById('chk-remember-me').checked) {
+                localStorage.setItem('odev_takip_remember_role', 'parent');
+                localStorage.setItem('odev_takip_remember_stu', studentNo);
+            }
+
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('screen-teacher').classList.add('hidden');
+            document.getElementById('screen-parent').classList.remove('hidden');
+            switchParentMainTab('homeworks');
+            renderParentScreen();
+        }
+
+        function enterTeacherMode() {
+            appState.currentUserRole = 'teacher';
+            localStorage.setItem('odev_takip_remember_role', 'teacher');
+
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('screen-parent').classList.add('hidden');
+            document.getElementById('screen-teacher').classList.remove('hidden');
+            switchTeacherTab('check');
+        }
+
+        window.logout = function() {
+            appState.currentUserRole = null;
+            appState.currentStudentNo = null;
+            localStorage.removeItem('odev_takip_remember_role');
+            localStorage.removeItem('odev_takip_remember_stu');
+
+            document.getElementById('input-student-pin').value = '';
+            document.getElementById('input-teacher-pin').value = '';
+            document.getElementById('screen-parent').classList.add('hidden');
+            document.getElementById('screen-teacher').classList.add('hidden');
+            document.getElementById('screen-login').classList.remove('hidden');
+        };
+
+        // ==================== ÇOCUK PROFİL FOTOĞRAFI / AVATAR İŞLEMLERİ ====================
+        window.openAvatarModal = function() {
+            document.getElementById('modal-avatar').classList.remove('hidden');
+        };
+        window.closeAvatarModal = function() {
+            document.getElementById('modal-avatar').classList.add('hidden');
+        };
+
+        window.selectPresetAvatar = async function(emoji) {
+            const no = appState.currentStudentNo;
+            if (!no) return;
+            appState.students[no].avatar = emoji;
+            appState.students[no].photoUrl = '';
+            saveToLocalCache();
+            closeAvatarModal();
+            renderParentScreen();
+            showToast(emoji, 'Yeni profil karakterin çok yakıştı!');
+
+            if (db && isCloudConnected) {
+                try {
+                    await updateDoc(doc(db, 'odev_takip_2d_students', no), { avatar: emoji, photoUrl: '' });
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        window.handleProfilePhotoUpload = async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const no = appState.currentStudentNo;
+            try {
+                const compressedBase64 = await compressImageFile(file, 260, 0.7);
+                appState.students[no].photoUrl = compressedBase64;
+                saveToLocalCache();
+                closeAvatarModal();
+                renderParentScreen();
+                showToast('📸', 'Profil fotoğrafın güncellendi!');
+
+                if (db && isCloudConnected) {
+                    await updateDoc(doc(db, 'odev_takip_2d_students', no), { photoUrl: compressedBase64 });
+                }
+            } catch (err) {
+                showToast('⚠️', 'Fotoğraf yüklenirken bir sorun oluştu.');
+            }
+        };
+
+        // ==================== ÖĞRENCİ / VELİ EKRANI & SEKMELERİ ====================
+        window.switchParentMainTab = function(tab) {
+            const btnHw = document.getElementById('p-tab-homeworks');
+            const btnBk = document.getElementById('p-tab-books');
+            const viewHw = document.getElementById('parent-view-homeworks');
+            const viewBk = document.getElementById('parent-view-books');
+
+            if (tab === 'homeworks') {
+                btnHw.className = "py-2.5 px-3 rounded-xl font-black text-xs sm:text-sm bg-white text-teal-800 shadow transition flex items-center justify-center gap-1.5";
+                btnBk.className = "py-2.5 px-3 rounded-xl font-black text-xs sm:text-sm text-white hover:bg-white/15 transition flex items-center justify-center gap-1.5";
+                viewHw.classList.remove('hidden');
+                viewBk.classList.add('hidden');
+            } else {
+                btnBk.className = "py-2.5 px-3 rounded-xl font-black text-xs sm:text-sm bg-white text-indigo-800 shadow transition flex items-center justify-center gap-1.5";
+                btnHw.className = "py-2.5 px-3 rounded-xl font-black text-xs sm:text-sm text-white hover:bg-white/15 transition flex items-center justify-center gap-1.5";
+                viewBk.classList.remove('hidden');
+                viewHw.classList.add('hidden');
+            }
+        };
+
+        function renderParentScreen() {
+            const student = appState.students[appState.currentStudentNo];
+            if (!student) return;
+
+            document.getElementById('parent-student-no').textContent = student.no;
+            document.getElementById('parent-student-greeting').textContent = `Merhaba ${getFirstName(student.name)}! 👋`;
+
+            // Sağ Üstteki Çocuk Profil Fotoğrafı / Avatarı
+            const emojiEl = document.getElementById('parent-avatar-emoji');
+            const imgEl = document.getElementById('parent-avatar-img');
+            if (student.photoUrl) {
+                imgEl.src = student.photoUrl;
+                imgEl.classList.remove('hidden');
+                emojiEl.classList.add('hidden');
+            } else {
+                emojiEl.textContent = student.avatar || '🦁';
+                emojiEl.classList.remove('hidden');
+                imgEl.classList.add('hidden');
+            }
+
+            const myBooks = appState.books.filter(b => b.studentNo === student.no);
+            document.getElementById('parent-total-books-badge').textContent = myBooks.length;
+
+            // Yıldız Kumbarası
+            const starCount = student.stars || 0;
+            const percent = Math.min(100, (starCount / 10) * 100);
+            document.getElementById('parent-star-count').textContent = starCount;
+            document.getElementById('parent-star-bar').style.width = `${percent}%`;
+
+            if (starCount >= 10) {
+                document.getElementById('parent-star-msg').innerHTML = `🎉 <b>HARİKASIN!</b> "Süper Öğrenci & Kitap Kurdu" seviyesine ulaştın!`;
+            } else {
+                document.getElementById('parent-star-msg').innerHTML = `🌟 Ödevlerini tamamla ve kitap oku, yıldızlarını biriktir!`;
+            }
+
+            renderParentAnnouncements();
+            renderParentHomeworks();
+            renderParentBooks();
+        }
+
+        window.toggleAllAnnouncements = function() {
+            showAllAnnouncements = !showAllAnnouncements;
+            renderParentAnnouncements();
+        };
+
+        function renderParentAnnouncements() {
+            const sectionEl = document.getElementById('parent-ann-section');
+            const listEl = document.getElementById('parent-announcement-list');
+            const toggleBtn = document.getElementById('btn-toggle-ann');
+            const unreadBadge = document.getElementById('parent-unread-ann-badge');
+            const studentNo = appState.currentStudentNo;
+
+            if (appState.announcements.length === 0) {
+                sectionEl.classList.add('hidden');
+                return;
+            }
+            sectionEl.classList.remove('hidden');
+
+            const unreadCount = appState.announcements.filter(a => !(a.readBy || []).includes(studentNo)).length;
+            if (unreadCount > 0) {
+                unreadBadge.textContent = `${unreadCount} Yeni`;
+                unreadBadge.classList.remove('hidden');
+            } else {
+                unreadBadge.classList.add('hidden');
+            }
+
+            if (appState.announcements.length <= 1) {
+                toggleBtn.classList.add('hidden');
+            } else {
+                toggleBtn.classList.remove('hidden');
+                toggleBtn.textContent = showAllAnnouncements ? 'Daha Az Göster' : `Tümünü Gör (${appState.announcements.length})`;
+            }
+
+            const visibleAnns = showAllAnnouncements ? appState.announcements : appState.announcements.slice(0, 1);
+            listEl.innerHTML = '';
+
+            visibleAnns.forEach(ann => {
+                const isRead = (ann.readBy || []).includes(studentNo);
+                const colorStyles = {
+                    amber: { bg: 'bg-amber-50/95', border: 'border-amber-300', tag: 'bg-amber-200/80 text-amber-950' },
+                    purple: { bg: 'bg-purple-50/95', border: 'border-purple-300', tag: 'bg-purple-200/80 text-purple-950' },
+                    rose: { bg: 'bg-rose-50/95', border: 'border-rose-300', tag: 'bg-rose-200/80 text-rose-950' },
+                    sky: { bg: 'bg-sky-50/95', border: 'border-sky-300', tag: 'bg-sky-200/80 text-sky-950' }
+                };
+                const style = colorStyles[ann.color] || colorStyles.amber;
+
+                const card = document.createElement('div');
+                card.className = `${style.bg} border-2 ${style.border} rounded-[1.5rem] p-4 shadow-xs space-y-2.5`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="${style.tag} text-[11px] font-black px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                            <span>${ann.icon || '📢'}</span> ${ann.tag}
+                        </span>
+                        <span class="text-[11px] font-bold text-slate-500">${ann.date || ''}</span>
+                    </div>
+                    <div>
+                        <h4 class="text-sm sm:text-base font-black text-slate-800">${ann.title}</h4>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-700 mt-1 leading-relaxed">${ann.desc}</p>
+                    </div>
+                    <div class="pt-1">
+                        ${isRead ? `
+                            <div class="w-full py-2 px-3 bg-white/85 border border-emerald-200 rounded-xl text-emerald-700 font-black text-xs flex items-center justify-center gap-1.5">
+                                <span>✅</span> Okundu / Anlaşıldı
+                            </div>
+                        ` : `
+                            <button onclick="acknowledgeAnnouncement('${ann.id}')" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-black text-xs sm:text-sm rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition">
+                                <span>✓</span> Okudum / Anladım
+                            </button>
+                        `}
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        window.acknowledgeAnnouncement = async function(annId) {
+            const ann = appState.announcements.find(a => a.id === annId);
+            const stuNo = appState.currentStudentNo;
+            if (!ann || !stuNo) return;
+
+            const updatedReadBy = Array.from(new Set([...(ann.readBy || []), stuNo]));
+            ann.readBy = updatedReadBy;
+            saveToLocalCache();
+            renderParentAnnouncements();
+            showToast('✅', 'Teşekkürler! Öğretmeninize okuduğunuz bilgisi iletildi.');
+
+            if (db && isCloudConnected) {
+                try {
+                    await updateDoc(doc(db, 'odev_takip_2d_announcements', annId), { readBy: updatedReadBy });
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        function renderParentHomeworks() {
+            const listEl = document.getElementById('parent-homework-list');
+            const studentNo = appState.currentStudentNo;
+            listEl.innerHTML = '';
+
+            if (appState.homeworks.length === 0) {
+                listEl.innerHTML = `
+                    <div class="bg-white rounded-3xl p-8 text-center border-2 border-dashed border-slate-200">
+                        <span class="text-4xl">🎈</span>
+                        <p class="text-sm font-black text-slate-600 mt-2">Şu an aktif ödev bulunmuyor!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const subjectStyles = {
+                'Türkçe': { badgeBg: 'bg-amber-100 text-amber-800', cardBorder: 'border-amber-200' },
+                'Matematik': { badgeBg: 'bg-sky-100 text-sky-800', cardBorder: 'border-sky-200' },
+                'Hayat Bilgisi': { badgeBg: 'bg-emerald-100 text-emerald-800', cardBorder: 'border-emerald-200' },
+                'İngilizce': { badgeBg: 'bg-rose-100 text-rose-800', cardBorder: 'border-rose-200' },
+                'Görsel Sanatlar': { badgeBg: 'bg-purple-100 text-purple-800', cardBorder: 'border-purple-200' },
+                'Serbest Etkinlik': { badgeBg: 'bg-teal-100 text-teal-800', cardBorder: 'border-teal-200' }
+            };
+
+            appState.homeworks.forEach(hw => {
+                const subKey = `${studentNo}_${hw.id}`;
+                const sub = appState.submissions[subKey];
+                const style = subjectStyles[hw.subject] || { badgeBg: 'bg-slate-100 text-slate-800', cardBorder: 'border-slate-200' };
+
+                let statusHtml = '';
+                if (!sub) {
+                    statusHtml = `
+                        <button onclick="openUploadModal('${hw.id}')" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 active:scale-[0.98] text-white font-black text-base rounded-2xl shadow-md shadow-emerald-200 flex items-center justify-center gap-2.5 transition">
+                            <span class="text-xl">📸</span> Fotoğraf Çek / Ödevi Yükle
+                        </button>
+                    `;
+                } else if (sub.status === 'submitted') {
+                    statusHtml = `
+                        <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 space-y-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2.5">
+                                    <img src="${sub.photoData}" class="w-12 h-12 rounded-xl object-cover border border-amber-300 shrink-0" alt="Ödev">
+                                    <div>
+                                        <div class="text-xs sm:text-sm font-black text-amber-900">⏳ Gönderildi (${sub.timestamp})</div>
+                                        <div class="text-[11px] font-bold text-amber-700">Öğretmen Kontrolünde...</div>
+                                    </div>
+                                </div>
+                                <button onclick="openUploadModal('${hw.id}')" class="text-xs font-extrabold text-amber-800 underline shrink-0">Değiştir</button>
+                            </div>
+                        </div>
+                    `;
+                } else if (sub.status === 'graded') {
+                    const isRetry = (sub.badge || '').includes('Tekrar');
+                    const cardBg = isRetry ? 'bg-rose-50 border-rose-200' : 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-300';
+                    const badgeBg = isRetry ? 'bg-rose-500 text-white' : 'bg-amber-400 text-amber-950';
+                    statusHtml = `
+                        <div class="${cardBg} border-2 rounded-2xl p-3.5 space-y-2.5 pop-in">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[11px] font-extrabold text-slate-500 uppercase">Öğretmen Değerlendirmesi:</span>
+                                <span class="${badgeBg} px-3 py-1 rounded-full text-xs sm:text-sm font-black shadow-xs">
+                                    ${sub.badge} ${sub.starsAwarded > 0 ? `(+${sub.starsAwarded}⭐)` : ''}
+                                </span>
+                            </div>
+                            ${sub.teacherNote ? `<p class="text-xs sm:text-sm font-bold text-slate-700 bg-white/90 p-2.5 rounded-xl border border-amber-200/70">💬 "${sub.teacherNote}"</p>` : ''}
+                            ${isRetry ? `<button onclick="openUploadModal('${hw.id}')" class="w-full py-2.5 bg-rose-500 text-white font-black text-xs rounded-xl">📷 Düzeltip Tekrar Yükle</button>` : ''}
+                        </div>
+                    `;
+                }
+
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-[1.5rem] p-4 shadow-sm border-2 ${style.cardBorder} space-y-3`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black ${style.badgeBg}">
+                            <span class="text-base">${hw.icon || '📘'}</span> ${hw.subject}
+                        </span>
+                        <span class="text-[11px] font-bold text-slate-400">${hw.date ? formatDateTR(hw.date) : ''}</span>
+                    </div>
+                    <div>
+                        <h4 class="text-base font-black text-slate-800">${hw.title}</h4>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-600 mt-1 leading-relaxed">${hw.desc}</p>
+                    </div>
+                    <div class="pt-1">
+                        ${statusHtml}
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        // ==================== VELİ OKUDUĞUM KİTAPLAR İŞLEMLERİ ====================
+        window.addStudentBook = async function() {
+            const studentNo = appState.currentStudentNo;
+            if (!studentNo) return;
+
+            const title = document.getElementById('book-input-title').value.trim();
+            const author = document.getElementById('book-input-author').value.trim();
+            const pagesVal = parseInt(document.getElementById('book-input-pages').value, 10);
+            const dateVal = document.getElementById('book-input-date').value || getTodayYYYYMMDD();
+            const note = document.getElementById('book-input-note').value.trim();
+
+            if (!title || !author || !pagesVal || pagesVal <= 0) {
+                showToast('⚠️', 'Lütfen kitap adı, yazarı ve sayfa sayısını eksiksiz girin.');
+                return;
+            }
+
+            const bookId = 'book_' + Date.now();
+            const newBook = {
+                id: bookId,
+                studentNo: studentNo,
+                title: title,
+                author: author,
+                pages: pagesVal,
+                readDate: dateVal,
+                note: note,
+                teacherStarred: false,
+                createdAt: Date.now()
+            };
+
+            const newTotalStars = (appState.students[studentNo].stars || 0) + 1;
+            appState.students[studentNo].stars = newTotalStars;
+            appState.books.unshift(newBook);
+            saveToLocalCache();
+
+            document.getElementById('book-input-title').value = '';
+            document.getElementById('book-input-author').value = '';
+            document.getElementById('book-input-pages').value = '';
+            document.getElementById('book-input-note').value = '';
+
+            renderParentScreen();
+            showToast('📚', `"${title}" listene eklendi ve +1⭐ kazandın!`);
+
+            if (db && isCloudConnected) {
+                try {
+                    await setDoc(doc(db, 'odev_takip_2d_books', bookId), newBook);
+                    await updateDoc(doc(db, 'odev_takip_2d_students', studentNo), { stars: newTotalStars });
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        window.deleteStudentBook = async function(bookId) {
+            appState.books = appState.books.filter(b => b.id !== bookId);
+            saveToLocalCache();
+            renderParentScreen();
+            showToast('🗑️', 'Kitap kaydı silindi.');
+
+            if (db && isCloudConnected) {
+                try {
+                    await deleteDoc(doc(db, 'odev_takip_2d_books', bookId));
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        function renderParentBooks() {
+            const studentNo = appState.currentStudentNo;
+            const myBooks = appState.books.filter(b => b.studentNo === studentNo);
+            const totalPages = myBooks.reduce((sum, b) => sum + (Number(b.pages) || 0), 0);
+
+            document.getElementById('parent-book-stat-count').textContent = myBooks.length;
+            document.getElementById('parent-book-stat-pages').textContent = totalPages;
+
+            const listEl = document.getElementById('parent-books-list');
+            listEl.innerHTML = '';
+
+            if (myBooks.length === 0) {
+                listEl.innerHTML = `
+                    <div class="bg-white rounded-2xl p-6 text-center border-2 border-dashed border-indigo-200">
+                        <span class="text-3xl">📖</span>
+                        <p class="text-xs sm:text-sm font-black text-slate-600 mt-1.5">Henüz kitap eklemedin. Yukarıdan okuduğun ilk kitabı ekle!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            myBooks.forEach(bk => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl p-3.5 shadow-xs border-2 border-indigo-100 flex items-start justify-between gap-3";
+                card.innerHTML = `
+                    <div class="space-y-1 min-w-0">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <span class="bg-indigo-100 text-indigo-800 text-[11px] font-black px-2.5 py-0.5 rounded-full">
+                                📖 ${bk.pages} Sayfa
+                            </span>
+                            <span class="text-[11px] font-bold text-slate-400">${formatDateTR(bk.readDate)}</span>
+                            ${bk.teacherStarred ? '<span class="bg-amber-300 text-amber-950 text-[11px] font-black px-2 py-0.5 rounded-full">⭐ Öğretmen Tebriği</span>' : ''}
+                        </div>
+                        <h5 class="text-sm sm:text-base font-black text-slate-800">${bk.title}</h5>
+                        <p class="text-xs font-bold text-slate-500">✍️ Yazar: ${bk.author}</p>
+                        ${bk.note ? `<p class="text-xs font-semibold text-indigo-900 bg-indigo-50/70 px-2.5 py-1.5 rounded-xl mt-1">💬 "${bk.note}"</p>` : ''}
+                    </div>
+                    <button onclick="deleteStudentBook('${bk.id}')" class="text-xs font-bold text-slate-400 hover:text-rose-600 p-1 shrink-0" title="Sil">
+                        🗑️
+                    </button>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        // ==================== ÖDEV FOTOĞRAFI YÜKLEME ====================
+        window.openUploadModal = function(hwId) {
+            activeUploadHwId = hwId;
+            const hw = appState.homeworks.find(h => h.id === hwId);
+            document.getElementById('upload-hw-name').textContent = `${hw.icon} ${hw.subject}: ${hw.title}`;
+            document.getElementById('upload-processing').classList.add('hidden');
+            document.getElementById('upload-actions').classList.remove('hidden');
+            document.getElementById('modal-upload').classList.remove('hidden');
+        };
+
+        window.closeUploadModal = function() {
+            document.getElementById('modal-upload').classList.add('hidden');
+            activeUploadHwId = null;
+        };
+
+        window.handleRealFileUpload = async function(event) {
+            const file = event.target.files[0];
+            if (!file || !activeUploadHwId) return;
+
+            document.getElementById('upload-actions').classList.add('hidden');
+            document.getElementById('upload-processing').classList.remove('hidden');
+
+            try {
+                const compressedDataUrl = await compressImageFile(file, 700, 0.65);
+                const now = new Date();
+                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                const subKey = `${appState.currentStudentNo}_${activeUploadHwId}`;
+                const hw = appState.homeworks.find(h => h.id === activeUploadHwId);
+
+                const submissionData = {
+                    studentNo: appState.currentStudentNo,
+                    homeworkId: activeUploadHwId,
+                    date: (hw && hw.date) ? hw.date : getTodayYYYYMMDD(),
+                    status: 'submitted',
+                    photoData: compressedDataUrl,
+                    badge: '',
+                    starsAwarded: 0,
+                    teacherNote: '',
+                    timestamp: timeStr,
+                    updatedAt: Date.now()
+                };
+
+                appState.submissions[subKey] = submissionData;
+                saveToLocalCache();
+                closeUploadModal();
+                renderParentScreen();
+                showToast('🎉', 'Harikasın! Ödev fotoğrafın öğretmene ulaştı.');
+
+                if (db && isCloudConnected) {
+                    await setDoc(doc(db, 'odev_takip_2d_submissions', subKey), submissionData);
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('⚠️', 'Fotoğraf yüklenemedi, lütfen tekrar deneyin.');
+                closeUploadModal();
+            }
+            event.target.value = '';
+        };
+
+        // ==================== ÖĞRETMEN PANELİ SEKMELERİ ====================
+        window.switchTeacherTab = function(tab) {
+            const tabs = ['check', 'ann', 'books', 'reports', 'class'];
+            const inactiveClass = "py-2 px-1 rounded-xl text-[10px] sm:text-[11px] font-black text-white/90 hover:bg-white/10 transition flex flex-col items-center justify-center gap-0.5";
+            const activeClass = "py-2 px-1 rounded-xl text-[10px] sm:text-[11px] font-black bg-white text-sky-700 shadow transition flex flex-col items-center justify-center gap-0.5";
+
+            tabs.forEach(t => {
+                const btn = document.getElementById(`t-tab-${t}`);
+                const view = document.getElementById(`teacher-view-${t}`);
+                btn.className = (t === tab) ? activeClass : inactiveClass;
+                if (t === tab) view.classList.remove('hidden');
+                else view.classList.add('hidden');
+            });
+
+            if (tab === 'check') renderTeacherCheckView();
+            if (tab === 'ann') renderTeacherAnnouncements();
+            if (tab === 'books') renderTeacherBooksView();
+            if (tab === 'reports') renderMonthlyReport();
+            if (tab === 'class') renderTeacherRosterList();
+        };
+
+        window.setStudentStatusFilter = function(filter) {
+            studentStatusFilter = filter;
+            ['ALL', 'SUBMITTED', 'PENDING'].forEach(f => {
+                const btn = document.getElementById(`st-filter-${f}`);
+                btn.className = (f === filter)
+                    ? "py-1.5 rounded-xl text-xs font-black bg-sky-600 text-white transition"
+                    : "py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+            });
+            renderTeacherCheckView();
+        };
+
+        // ==================== ÖĞRETMEN SEKME 1: ÖDEVLER & KONTROL ====================
+        function renderTeacherCheckView() {
+            const filterSelect = document.getElementById('teacher-hw-filter');
+            const prevFilter = filterSelect.value;
+
+            filterSelect.innerHTML = '<option value="ALL">Tüm Aktif Ödevler</option>';
+            appState.homeworks.forEach(hw => {
+                const opt = document.createElement('option');
+                opt.value = hw.id;
+                opt.textContent = `${hw.icon} ${hw.subject} - ${hw.title}`;
+                filterSelect.appendChild(opt);
+            });
+            if (prevFilter && (prevFilter === 'ALL' || appState.homeworks.some(h => h.id === prevFilter))) {
+                filterSelect.value = prevFilter;
+            }
+
+            const selectedHwId = filterSelect.value;
+            const deleteBtn = document.getElementById('btn-delete-selected-hw');
+            if (selectedHwId !== 'ALL') deleteBtn.classList.remove('hidden');
+            else deleteBtn.classList.add('hidden');
+
+            const targetHomeworks = selectedHwId === 'ALL'
+                ? appState.homeworks
+                : appState.homeworks.filter(h => h.id === selectedHwId);
+
+            const sortedStudents = Object.values(appState.students).sort((a, b) => Number(a.no) - Number(b.no));
+            const listEl = document.getElementById('teacher-student-list');
+            listEl.innerHTML = '';
+
+            let pendingCount = 0;
+            let gradedCount = 0;
+            let missingCount = 0;
+
+            sortedStudents.forEach(student => {
+                let hwItemsHtml = '';
+                let hasPendingReview = false;
+                let hasAnySubmission = false;
+                let hasAnyMissing = false;
+
+                targetHomeworks.forEach(hw => {
+                    const key = `${student.no}_${hw.id}`;
+                    const sub = appState.submissions[key];
+
+                    if (!sub) {
+                        missingCount++;
+                        hasAnyMissing = true;
+                        hwItemsHtml += `
+                            <div class="flex items-center justify-between py-1.5 px-2.5 bg-slate-50 rounded-xl text-xs">
+                                <span class="font-bold text-slate-500 truncate">${hw.icon} ${hw.title}</span>
+                                <span class="text-slate-400 font-semibold shrink-0">Bekleniyor</span>
+                            </div>
+                        `;
+                    } else if (sub.status === 'submitted') {
+                        pendingCount++;
+                        hasPendingReview = true;
+                        hasAnySubmission = true;
+                        hwItemsHtml += `
+                            <button onclick="openReviewModal('${key}')" class="w-full flex items-center justify-between py-2 px-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl text-xs transition">
+                                <span class="font-black text-emerald-950 truncate">${hw.icon} ${hw.title}</span>
+                                <span class="bg-emerald-500 text-white font-black px-2.5 py-1 rounded-lg shrink-0 animate-pulse">
+                                    📷 İncele
+                                </span>
+                            </button>
+                        `;
+                    } else if (sub.status === 'graded') {
+                        gradedCount++;
+                        hasAnySubmission = true;
+                        hwItemsHtml += `
+                            <button onclick="openReviewModal('${key}')" class="w-full flex items-center justify-between py-2 px-3 bg-amber-50/80 hover:bg-amber-100 border border-amber-200 rounded-xl text-xs transition">
+                                <span class="font-bold text-slate-700 truncate">${hw.icon} ${hw.title}</span>
+                                <span class="font-black text-amber-900 shrink-0">${sub.badge}</span>
+                            </button>
+                        `;
+                    }
+                });
+
+                if (studentStatusFilter === 'SUBMITTED' && !hasAnySubmission) return;
+                if (studentStatusFilter === 'PENDING' && !hasAnyMissing) return;
+
+                const avatarHtml = student.photoUrl
+                    ? `<img src="${student.photoUrl}" class="w-10 h-10 rounded-full object-cover border-2 border-amber-300 shrink-0">`
+                    : `<span class="text-xl bg-amber-50 border border-amber-200 w-10 h-10 rounded-full flex items-center justify-center shrink-0">${student.avatar || '🦁'}</span>`;
+
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-2xl p-3.5 shadow-xs border ${hasPendingReview ? 'border-emerald-300 ring-2 ring-emerald-100' : 'border-slate-200'} space-y-2.5`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            ${avatarHtml}
+                            <div class="min-w-0">
+                                <h4 class="text-sm font-black text-slate-800 truncate">${student.name}</h4>
+                                <span class="text-[11px] font-bold text-slate-400">No: ${student.no}</span>
+                            </div>
+                        </div>
+                        <span class="bg-amber-100 text-amber-800 font-black text-xs px-2.5 py-1 rounded-full shrink-0">
+                            ⭐ ${student.stars || 0}
+                        </span>
+                    </div>
+                    <div class="space-y-1.5">
+                        ${hwItemsHtml || '<p class="text-xs text-slate-400">Aktif ödev yok.</p>'}
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+
+            document.getElementById('pending-count-badge').textContent = pendingCount;
+            document.getElementById('teacher-stats-bar').innerHTML = `
+                <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-2">
+                    <div class="text-base font-black text-emerald-700">${pendingCount}</div>
+                    <div class="text-[10px] font-extrabold text-emerald-800">Kontrol Bekleyen</div>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-2">
+                    <div class="text-base font-black text-amber-700">${gradedCount}</div>
+                    <div class="text-[10px] font-extrabold text-amber-800">Yıldız Verilen</div>
+                </div>
+                <div class="bg-slate-100 border border-slate-200 rounded-2xl p-2">
+                    <div class="text-base font-black text-slate-700">${missingCount}</div>
+                    <div class="text-[10px] font-extrabold text-slate-600">Henüz Gelmeyen</div>
+                </div>
+            `;
+        }
+
+        window.deleteSelectedHomework = async function() {
+            const hwId = document.getElementById('teacher-hw-filter').value;
+            if (!hwId || hwId === 'ALL') return;
+            appState.homeworks = appState.homeworks.filter(h => h.id !== hwId);
+            document.getElementById('teacher-hw-filter').value = 'ALL';
+            saveToLocalCache();
+            renderTeacherCheckView();
+            showToast('🗑️', 'Seçili ödev listeden kaldırıldı.');
+            if (db && isCloudConnected) {
+                try {
+                    await deleteDoc(doc(db, 'odev_takip_2d_homeworks', hwId));
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        // ==================== ÖĞRETMEN ÖDEV İNCELEME MODALI ====================
+        window.openReviewModal = function(subKey) {
+            activeReviewKey = subKey;
+            const [studentNo, hwId] = subKey.split('_');
+            const student = appState.students[studentNo];
+            const hw = appState.homeworks.find(h => h.id === hwId);
+            const sub = appState.submissions[subKey];
+
+            document.getElementById('review-student-name').textContent = `${student.no} - ${student.name}`;
+            document.getElementById('review-hw-title').textContent = `${hw ? hw.icon + ' ' + hw.subject : ''} - ${hw ? hw.title : ''}`;
+            document.getElementById('review-teacher-note').value = sub.teacherNote || '';
+            document.getElementById('review-timestamp-badge').textContent = `Gönderim: ${sub.timestamp || ''}`;
+
+            const photoContainer = document.getElementById('review-photo-container');
+            photoContainer.innerHTML = `<img src="${sub.photoData}" class="w-full max-h-72 object-contain" alt="Ödev Fotoğrafı">`;
+
+            document.getElementById('modal-review').classList.remove('hidden');
+        };
+
+        window.closeReviewModal = function() {
+            document.getElementById('modal-review').classList.add('hidden');
+            activeReviewKey = null;
+        };
+
+        window.setQuickNote = function(text) {
+            document.getElementById('review-teacher-note').value = text;
+        };
+
+        window.submitReview = async function(badgeText, starsToAdd) {
+            if (!activeReviewKey) return;
+            const [studentNo] = activeReviewKey.split('_');
+            const sub = appState.submissions[activeReviewKey];
+            const note = document.getElementById('review-teacher-note').value.trim();
+
+            const prevStars = sub.starsAwarded || 0;
+            const newTotalStars = Math.max(0, (appState.students[studentNo].stars || 0) - prevStars + starsToAdd);
+            appState.students[studentNo].stars = newTotalStars;
+
+            sub.status = 'graded';
+            sub.badge = badgeText;
+            sub.starsAwarded = starsToAdd;
+            sub.teacherNote = note;
+            saveToLocalCache();
+
+            const keyToSave = activeReviewKey;
+            closeReviewModal();
+            renderTeacherCheckView();
+            showToast('⭐', `${appState.students[studentNo].name} için "${badgeText}" kaydedildi!`);
+
+            if (db && isCloudConnected) {
+                try {
+                    await updateDoc(doc(db, 'odev_takip_2d_submissions', keyToSave), {
+                        status: 'graded',
+                        badge: badgeText,
+                        starsAwarded: starsToAdd,
+                        teacherNote: note
+                    });
+                    await updateDoc(doc(db, 'odev_takip_2d_students', studentNo), {
+                        stars: newTotalStars
+                    });
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        // ==================== ÖĞRETMEN YENİ ÖDEV EKLEME ====================
+        window.selectSubject = function(e, name, icon) {
+            selectedNewSubject = { name, icon };
+            document.querySelectorAll('.subj-btn').forEach(btn => {
+                btn.className = "subj-btn p-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-extrabold text-xs flex items-center justify-center gap-1";
+            });
+            e.currentTarget.className = "subj-btn p-2 rounded-xl border-2 border-sky-500 bg-sky-50 text-sky-800 font-extrabold text-xs flex items-center justify-center gap-1";
+        };
+
+        window.addNewHomework = async function() {
+            const title = document.getElementById('new-hw-title').value.trim();
+            const desc = document.getElementById('new-hw-desc').value.trim();
+            const hwDate = document.getElementById('new-hw-date').value || getTodayYYYYMMDD();
+
+            if (!title || !desc) {
+                showToast('⚠️', 'Lütfen ödev başlığı ve açıklamasını yazın.');
+                return;
+            }
+
+            const hwId = 'hw_' + Date.now();
+            const newHw = {
+                id: hwId,
+                subject: selectedNewSubject.name,
+                icon: selectedNewSubject.icon,
+                title: title,
+                desc: desc,
+                date: hwDate,
+                createdAt: Date.now()
+            };
+
+            appState.homeworks.unshift(newHw);
+            saveToLocalCache();
+            document.getElementById('new-hw-title').value = '';
+            document.getElementById('new-hw-desc').value = '';
+
+            renderTeacherCheckView();
+            showToast('📢', 'Yeni ödev tüm 2-D sınıfına gönderildi!');
+
+            if (db && isCloudConnected) {
+                try {
+                    await setDoc(doc(db, 'odev_takip_2d_homeworks', hwId), newHw);
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        // ==================== ÖĞRETMEN SEKME 2: DUYURULAR ====================
+        window.selectAnnType = function(e, tag, icon, color) {
+            selectedNewAnnType = { tag, icon, color };
+            document.querySelectorAll('.ann-type-btn').forEach(btn => {
+                btn.className = "ann-type-btn p-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-extrabold text-[11px] flex flex-col items-center gap-0.5";
+            });
+            const activeBorders = {
+                amber: 'border-amber-500 bg-amber-50 text-amber-900',
+                purple: 'border-purple-500 bg-purple-50 text-purple-900',
+                rose: 'border-rose-500 bg-rose-50 text-rose-900',
+                sky: 'border-sky-500 bg-sky-50 text-sky-900'
+            };
+            e.currentTarget.className = `ann-type-btn p-2 rounded-xl border-2 ${activeBorders[color]} font-extrabold text-[11px] flex flex-col items-center gap-0.5`;
+        };
+
+        window.publishAnnouncement = async function() {
+            const title = document.getElementById('new-ann-title').value.trim();
+            const desc = document.getElementById('new-ann-desc').value.trim();
+
+            if (!title || !desc) {
+                showToast('⚠️', 'Lütfen duyuru başlığı ve mesajını yazın.');
+                return;
+            }
+
+            const annId = 'ann_' + Date.now();
+            const newAnn = {
+                id: annId,
+                tag: selectedNewAnnType.tag,
+                icon: selectedNewAnnType.icon,
+                color: selectedNewAnnType.color,
+                date: formatTodayTR(),
+                title: title,
+                desc: desc,
+                readBy: [],
+                createdAt: Date.now()
+            };
+
+            appState.announcements.unshift(newAnn);
+            saveToLocalCache();
+            document.getElementById('new-ann-title').value = '';
+            document.getElementById('new-ann-desc').value = '';
+            renderTeacherAnnouncements();
+            showToast('📢', 'Duyuru tüm 2-D velilerine yayınlandı!');
+
+            if (db && isCloudConnected) {
+                try {
+                    await setDoc(doc(db, 'odev_takip_2d_announcements', annId), newAnn);
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        window.toggleAnnReceiptExpand = function(annId) {
+            expandedAnnReceipts[annId] = !expandedAnnReceipts[annId];
+            renderTeacherAnnouncements();
+        };
+
+        function renderTeacherAnnouncements() {
+            const listEl = document.getElementById('teacher-ann-list');
+            const allStudents = Object.values(appState.students).sort((a, b) => Number(a.no) - Number(b.no));
+            const totalStudents = allStudents.length;
+            listEl.innerHTML = '';
+
+            appState.announcements.forEach(ann => {
+                const readList = ann.readBy || [];
+                const pct = totalStudents > 0 ? Math.round((readList.length / totalStudents) * 100) : 0;
+                const readStudents = allStudents.filter(s => readList.includes(s.no));
+                const unreadStudents = allStudents.filter(s => !readList.includes(s.no));
+                const isExpanded = !!expandedAnnReceipts[ann.id];
+
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl p-3.5 shadow-xs border border-slate-200 space-y-2.5";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full">
+                            ${ann.icon} ${ann.tag}
+                        </span>
+                        <button onclick="deleteAnnouncement('${ann.id}')" class="text-xs font-bold text-rose-600 hover:underline">Sil</button>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-black text-slate-800">${ann.title}</h5>
+                        <p class="text-xs font-semibold text-slate-600 mt-0.5">${ann.desc}</p>
+                    </div>
+                    <div class="pt-2 border-t border-slate-100 space-y-1.5">
+                        <div class="flex items-center justify-between text-xs font-extrabold">
+                            <span class="text-emerald-700">✓ ${readList.length} / ${totalStudents} Veli Okudu (%${pct})</span>
+                            <button onclick="toggleAnnReceiptExpand('${ann.id}')" class="text-sky-700 hover:underline">
+                                ${isExpanded ? 'Gizle ▲' : 'Detay Gör ▼'}
+                            </button>
+                        </div>
+                        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-emerald-500 rounded-full transition-all" style="width: ${pct}%;"></div>
+                        </div>
+                        ${isExpanded ? `
+                            <div class="bg-slate-50 rounded-xl p-2.5 text-[11px] space-y-1.5 mt-1">
+                                <div class="text-emerald-800 font-bold">
+                                    ✅ Okuyanlar (${readStudents.length}): ${readStudents.length ? readStudents.map(s => getFirstName(s.name)).join(', ') : 'Henüz yok'}
+                                </div>
+                                <div class="text-rose-700 font-bold">
+                                    ⏳ Henüz Okumayanlar (${unreadStudents.length}): ${unreadStudents.length ? unreadStudents.map(s => getFirstName(s.name)).join(', ') : 'Herkes okudu!'}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        window.deleteAnnouncement = async function(annId) {
+            appState.announcements = appState.announcements.filter(a => a.id !== annId);
+            saveToLocalCache();
+            renderTeacherAnnouncements();
+            showToast('🗑️', 'Duyuru silindi.');
+            if (db && isCloudConnected) {
+                try {
+                    await deleteDoc(doc(db, 'odev_takip_2d_announcements', annId));
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        // ==================== ÖĞRETMEN SEKME 3: KİTAP TAKİBİ ====================
+        function populateTeacherBookStudentFilter() {
+            const select = document.getElementById('teacher-book-student-filter');
+            const prev = select.value;
+            const sorted = Object.values(appState.students).sort((a, b) => Number(a.no) - Number(b.no));
+            select.innerHTML = '<option value="ALL">Tüm Öğrenciler</option>';
+            sorted.forEach(st => {
+                const opt = document.createElement('option');
+                opt.value = st.no;
+                opt.textContent = `${st.no} - ${st.name}`;
+                select.appendChild(opt);
+            });
+            if (prev) select.value = prev;
+        }
+
+        function renderTeacherBooksView() {
+            const filterNo = document.getElementById('teacher-book-student-filter').value;
+            const filteredBooks = filterNo === 'ALL'
+                ? appState.books
+                : appState.books.filter(b => b.studentNo === filterNo);
+
+            const totalBooks = appState.books.length;
+            const totalPages = appState.books.reduce((s, b) => s + (Number(b.pages) || 0), 0);
+            const activeReaders = new Set(appState.books.map(b => b.studentNo)).size;
+
+            document.getElementById('teacher-books-summary').innerHTML = `
+                <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-2.5">
+                    <div class="text-base font-black text-indigo-700">${totalBooks}</div>
+                    <div class="text-[10px] font-extrabold text-indigo-900">Toplam Kitap</div>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-2.5">
+                    <div class="text-base font-black text-amber-700">${totalPages}</div>
+                    <div class="text-[10px] font-extrabold text-amber-900">Toplam Sayfa</div>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-2.5">
+                    <div class="text-base font-black text-emerald-700">${activeReaders} / ${Object.keys(appState.students).length}</div>
+                    <div class="text-[10px] font-extrabold text-emerald-900">Okuyan Öğrenci</div>
+                </div>
+            `;
+
+            const listEl = document.getElementById('teacher-books-list');
+            listEl.innerHTML = '';
+
+            if (filteredBooks.length === 0) {
+                listEl.innerHTML = `
+                    <div class="bg-white rounded-2xl p-8 text-center border border-slate-200">
+                        <span class="text-3xl">📚</span>
+                        <p class="text-xs sm:text-sm font-black text-slate-600 mt-2">Henüz eklenmiş kitap kaydı bulunmuyor.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredBooks.forEach(bk => {
+                const st = appState.students[bk.studentNo];
+                const stName = st ? `${st.no} - ${st.name}` : `No: ${bk.studentNo}`;
+
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl p-3.5 shadow-xs border border-slate-200 space-y-2";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-black text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full">
+                            👧👦 ${stName}
+                        </span>
+                        <span class="text-[11px] font-bold text-slate-400">${formatDateTR(bk.readDate)}</span>
+                    </div>
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <h4 class="text-sm font-black text-slate-800">📖 ${bk.title}</h4>
+                            <p class="text-xs font-bold text-slate-500">✍️ ${bk.author} • <span class="text-indigo-700 font-black">${bk.pages} Sayfa</span></p>
+                            ${bk.note ? `<p class="text-xs font-semibold text-slate-600 mt-1 bg-slate-50 p-2 rounded-xl">💬 "${bk.note}"</p>` : ''}
+                        </div>
+                        <button onclick="toggleBookTeacherStar('${bk.id}')" class="px-3 py-2 rounded-xl text-xs font-black shrink-0 transition ${bk.teacherStarred ? 'bg-amber-300 text-amber-950' : 'bg-slate-100 hover:bg-amber-100 text-slate-700'}">
+                            ${bk.teacherStarred ? '⭐ Tebrik Edildi' : '⭐ Tebrik Et (+1)'}
+                        </button>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        window.toggleBookTeacherStar = async function(bookId) {
+            const bk = appState.books.find(b => b.id === bookId);
+            if (!bk || bk.teacherStarred) return;
+
+            bk.teacherStarred = true;
+            const stuNo = bk.studentNo;
+            const newStars = (appState.students[stuNo]?.stars || 0) + 1;
+            if (appState.students[stuNo]) {
+                appState.students[stuNo].stars = newStars;
+            }
+            saveToLocalCache();
+
+            renderTeacherBooksView();
+            showToast('⭐', 'Öğrencinin okuduğu kitaba +1 tebrik yıldızı verildi!');
+
+            if (db && isCloudConnected) {
+                try {
+                    await updateDoc(doc(db, 'odev_takip_2d_books', bookId), { teacherStarred: true });
+                    if (appState.students[stuNo]) {
+                        await updateDoc(doc(db, 'odev_takip_2d_students', stuNo), { stars: newStars });
+                    }
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        // ==================== ÖĞRETMEN SEKME 4: AYLIK RAPORLAMA ====================
+        function getMonthlyReportData(selectedYYYYMM) {
+            const sortedStudents = Object.values(appState.students).sort((a, b) => Number(a.no) - Number(b.no));
+            const allSubmissions = Object.values(appState.submissions);
+
+            const monthSubs = allSubmissions.filter(sub => {
+                if (sub.date && sub.date.startsWith(selectedYYYYMM)) return true;
+                if (sub.updatedAt) {
+                    const d = new Date(sub.updatedAt);
+                    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    return ym === selectedYYYYMM;
+                }
+                return false;
+            });
+
+            const monthBooks = appState.books.filter(bk => {
+                if (bk.readDate && bk.readDate.startsWith(selectedYYYYMM)) return true;
+                if (bk.createdAt) {
+                    const d = new Date(bk.createdAt);
+                    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    return ym === selectedYYYYMM;
+                }
+                return false;
+            });
+
+            const rows = sortedStudents.map(st => {
+                const stSubs = monthSubs.filter(s => s.studentNo === st.no);
+                const completedHw = stSubs.length;
+                const hwStars = stSubs.reduce((sum, s) => sum + (Number(s.starsAwarded) || 0), 0);
+
+                const stBooks = monthBooks.filter(b => b.studentNo === st.no);
+                const bookCount = stBooks.length;
+                const pageCount = stBooks.reduce((sum, b) => sum + (Number(b.pages) || 0), 0);
+                const bookStars = stBooks.reduce((sum, b) => sum + 1 + (b.teacherStarred ? 1 : 0), 0);
+
+                return {
+                    no: st.no,
+                    name: st.name,
+                    completedHw,
+                    earnedStars: hwStars + bookStars,
+                    bookCount,
+                    pageCount
+                };
+            });
+
+            return { rows };
+        }
+
+        window.renderMonthlyReport = function() {
+            const monthPicker = document.getElementById('report-month-picker');
+            const selectedYM = monthPicker.value || getCurrentYYYYMM();
+            document.getElementById('report-selected-month-label').textContent = formatMonthTitleTR(selectedYM);
+
+            const { rows } = getMonthlyReportData(selectedYM);
+
+            const totalHwDone = rows.reduce((s, r) => s + r.completedHw, 0);
+            const totalStarsEarned = rows.reduce((s, r) => s + r.earnedStars, 0);
+            const totalBooksRead = rows.reduce((s, r) => s + r.bookCount, 0);
+            const totalPagesRead = rows.reduce((s, r) => s + r.pageCount, 0);
+
+            document.getElementById('report-summary-cards').innerHTML = `
+                <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3">
+                    <div class="text-xs font-extrabold text-emerald-800">Tamamlanan Ödev</div>
+                    <div class="text-xl font-black text-emerald-700 mt-0.5">${totalHwDone} <span class="text-xs font-bold">adet</span></div>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3">
+                    <div class="text-xs font-extrabold text-amber-800">Kazanılan Yıldız</div>
+                    <div class="text-xl font-black text-amber-700 mt-0.5">${totalStarsEarned} ⭐</div>
+                </div>
+                <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-3">
+                    <div class="text-xs font-extrabold text-indigo-800">Okunan Kitap</div>
+                    <div class="text-xl font-black text-indigo-700 mt-0.5">${totalBooksRead} <span class="text-xs font-bold">kitap</span></div>
+                </div>
+                <div class="bg-purple-50 border border-purple-200 rounded-2xl p-3">
+                    <div class="text-xs font-extrabold text-purple-800">Okunan Sayfa</div>
+                    <div class="text-xl font-black text-purple-700 mt-0.5">${totalPagesRead} <span class="text-xs font-bold">sayfa</span></div>
+                </div>
+            `;
+
+            const topStar = [...rows].sort((a, b) => b.earnedStars - a.earnedStars)[0];
+            const topReader = [...rows].sort((a, b) => b.pageCount - a.pageCount || b.bookCount - a.bookCount)[0];
+
+            document.getElementById('report-highlights').innerHTML = `
+                <div class="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl p-3 shadow-xs">
+                    <div class="text-[10px] font-black uppercase tracking-wider opacity-90">🏆 Ayın Yıldız Öğrencisi</div>
+                    <div class="text-sm font-black mt-0.5 truncate">
+                        ${topStar && topStar.earnedStars > 0 ? `${topStar.name} (${topStar.earnedStars} ⭐)` : 'Henüz veri yok'}
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl p-3 shadow-xs">
+                    <div class="text-[10px] font-black uppercase tracking-wider opacity-90">📚 Ayın Kitap Kurdu</div>
+                    <div class="text-sm font-black mt-0.5 truncate">
+                        ${topReader && topReader.pageCount > 0 ? `${topReader.name} (${topReader.bookCount} Kitap / ${topReader.pageCount} Sayfa)` : 'Henüz veri yok'}
+                    </div>
+                </div>
+            `;
+
+            const tbody = document.getElementById('report-table-body');
+            tbody.innerHTML = '';
+
+            rows.forEach((r, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60';
+                tr.innerHTML = `
+                    <td class="py-2.5 px-2.5 font-extrabold text-slate-800">
+                        <span class="text-slate-400 font-bold mr-1">${r.no}</span> ${r.name}
+                    </td>
+                    <td class="py-2.5 px-2 text-center font-black text-emerald-700">${r.completedHw}</td>
+                    <td class="py-2.5 px-2 text-center font-black text-amber-600">${r.earnedStars} ⭐</td>
+                    <td class="py-2.5 px-2 text-center font-black text-indigo-700">${r.bookCount}</td>
+                    <td class="py-2.5 px-2.5 text-center font-black text-purple-700">${r.pageCount}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.exportMonthlyReportCSV = function() {
+            const selectedYM = document.getElementById('report-month-picker').value || getCurrentYYYYMM();
+            const monthTitle = formatMonthTitleTR(selectedYM);
+            const { rows } = getMonthlyReportData(selectedYM);
+
+            let csvContent = "\uFEFF";
+            csvContent += `2-D Sınıfı Aylık Performans Raporu (${monthTitle})\n`;
+            csvContent += "Okul No;Öğrenci Adı Soyadı;Tamamlanan Ödev;Kazanılan Yıldız;Okunan Kitap Sayısı;Okunan Toplam Sayfa\n";
+
+            rows.forEach(r => {
+                csvContent += `${r.no};"${r.name}";${r.completedHw};${r.earnedStars};${r.bookCount};${r.pageCount}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `2D_Sinifi_Aylik_Rapor_${selectedYM}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast('📥', `${monthTitle} raporu Excel (CSV) olarak indirildi!`);
+        };
+
+        // ==================== ÖĞRETMEN SEKME 5: SINIF LİSTESİ ====================
+        function renderTeacherRosterList() {
+            const listEl = document.getElementById('teacher-roster-list');
+            const sortedStudents = Object.values(appState.students).sort((a, b) => Number(a.no) - Number(b.no));
+            document.getElementById('roster-total-count').textContent = sortedStudents.length;
+            listEl.innerHTML = '';
+
+            sortedStudents.forEach(st => {
+                const row = document.createElement('div');
+                row.className = "bg-white p-3 rounded-2xl border border-slate-200 flex items-center justify-between gap-2";
+                row.innerHTML = `
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <span class="w-9 h-9 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-lg shrink-0">
+                            ${st.avatar || '🦁'}
+                        </span>
+                        <div class="min-w-0">
+                            <div class="text-xs sm:text-sm font-black text-slate-800 truncate">${st.no} - ${st.name}</div>
+                            <div class="text-[11px] font-bold text-slate-500">Şifre: <span class="text-sky-700 font-black">${st.pin}</span> • ⭐ ${st.stars || 0} Yıldız</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button onclick="editStudentModal('${st.no}')" class="px-2.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 text-[11px] font-extrabold rounded-xl transition">
+                            Düzenle
+                        </button>
+                        <button onclick="removeStudent('${st.no}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-700 text-[11px] font-extrabold rounded-xl transition">
+                            Sil
+                        </button>
+                    </div>
+                `;
+                listEl.appendChild(row);
+            });
+        }
+
+        window.openAddStudentModal = function() {
+            document.getElementById('student-modal-title').textContent = 'Yeni Öğrenci Ekle';
+            document.getElementById('add-stu-no').value = '';
+            document.getElementById('add-stu-no').disabled = false;
+            document.getElementById('add-stu-name').value = '';
+            document.getElementById('add-stu-pin').value = '';
+            document.getElementById('edit-stars-row').classList.add('hidden');
+            document.getElementById('modal-add-student').classList.remove('hidden');
+        };
+
+        window.editStudentModal = function(no) {
+            const st = appState.students[no];
+            if (!st) return;
+            document.getElementById('student-modal-title').textContent = `Öğrenci Düzenle (No: ${no})`;
+            document.getElementById('add-stu-no').value = st.no;
+            document.getElementById('add-stu-no').disabled = true;
+            document.getElementById('add-stu-name').value = st.name;
+            document.getElementById('add-stu-pin').value = st.pin;
+            document.getElementById('edit-stars-row').classList.remove('hidden');
+            document.getElementById('add-stu-stars').value = st.stars || 0;
+            document.getElementById('modal-add-student').classList.remove('hidden');
+        };
+
+        window.closeAddStudentModal = function() {
+            document.getElementById('modal-add-student').classList.add('hidden');
+        };
+
+        window.saveNewStudent = async function() {
+            const no = document.getElementById('add-stu-no').value.trim();
+            const name = document.getElementById('add-stu-name').value.trim().toLocaleUpperCase('tr-TR');
+            const pin = document.getElementById('add-stu-pin').value.trim() || no;
+            const starsInput = document.getElementById('add-stu-stars').value;
+
+            if (!no || !name) {
+                showToast('⚠️', 'Okul numarası ve ad soyad zorunludur.');
+                return;
+            }
+
+            const existing = appState.students[no];
+            const parsedStars = existing ? (starsInput !== '' ? Math.max(0, Number(starsInput)) : (existing.stars || 0)) : 0;
+
+            const stuObj = {
+                no,
+                name,
+                avatar: existing ? existing.avatar : '🌟',
+                photoUrl: existing ? (existing.photoUrl || '') : '',
+                pin,
+                stars: parsedStars
+            };
+
+            appState.students[no] = stuObj;
+            saveToLocalCache();
+            populateStudentLoginDropdown();
+            populateTeacherBookStudentFilter();
+            renderTeacherRosterList();
+            closeAddStudentModal();
+            showToast('✅', `${name} bilgileri kaydedildi.`);
+
+            if (db && isCloudConnected) {
+                try {
+                    await setDoc(doc(db, 'odev_takip_2d_students', no), stuObj);
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        window.removeStudent = async function(no) {
+            delete appState.students[no];
+            saveToLocalCache();
+            populateStudentLoginDropdown();
+            populateTeacherBookStudentFilter();
+            renderTeacherRosterList();
+            showToast('🗑️', 'Öğrenci listeden çıkarıldı.');
+            if (db && isCloudConnected) {
+                try {
+                    await deleteDoc(doc(db, 'odev_takip_2d_students', no));
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        // Uygulamayı Başlat
+        initApp();
+    </script>
+</body>
+</html>
